@@ -1,0 +1,25 @@
+on: [pull_request]
+
+env:
+  TERRAFORM_VERSION: 0.12.16
+  KUBECTL_VERSION: 1.17.0
+  HELM_VERSION: 3.0.2
+  DIRENV_VERSION: 2.20.0
+  ENVKEY_VERSION: 1.2.9
+  AWS_IAM_AUTHENTICATOR_VERSION: 1.14.6
+  ARTIFACTS_DIR: plans
+  TERRAFORM_TOKEN: ${{ secrets.TERRAFORM_TOKEN }}
+  SSH_PRIV_KEY: ${{ secrets.SSH_PRIV_KEY }}
+
+jobs:
+  plan:
+    runs_on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: parkside-securities/terraform-action/plan
+        with:
+          dirs: parkside-ops:parkside-dev:parkside-data-science
+      - uses: actions/upload-artifact@v1
+        with:
+        name: plans
+        path: plans

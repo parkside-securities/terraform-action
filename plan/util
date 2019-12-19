@@ -1,0 +1,130 @@
+configure_ssh () {
+    mkdir -p ~/.ssh
+    echo "${SSH_PRIV_KEY}" | base64 -d > ~/.ssh/id_rsa
+    chmod 600 ~/.ssh/id_rsa
+
+    ssh-keyscan github.com >> ~/.ssh/known_hosts
+}
+
+configure_terraform () {
+    cat <<- EOF > ~/.terraformrc
+	credentials "app.terraform.io" {
+		token = "${TERRAFORM_TOKEN}"
+	}
+EOF
+}
+
+configure_kubectl () {
+    mkdir -p ~/.kube
+}
+
+mk_artifacts_dir () {
+    path="${1}"
+    mkdir -p ${ARTIFACTS_DIR}
+}
+
+get_terraform () {
+    # Download specified version of terraform
+    # Usage: get_terraform <version>
+    version="${1}"
+    tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
+    pushd $tmp_dir > /dev/null
+    curl -LsOf "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_amd64.zip" ||\
+        { printf "Failed to download terraform. %d\n" $?; return 1; }
+    unzip -q "terraform_${version}_linux_amd64.zip"
+    mv ./terraform /usr/local/bin
+    popd > /dev/null
+    rm -rf $tmp_dir
+}
+
+get_kubectl () {
+    # Download specified version of kubectl
+    # Usage: get_kubectl <version>
+    version="${1}"
+    tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
+    pushd $tmp_dir > /dev/null
+    curl -LsOf "https://storage.googleapis.com/kubernetes-release/release/v${version}/bin/linux/amd64/kubectl" ||\
+        { printf "Failed to download kubectl. %d\n" $?; return 1; }
+    mv ./kubectl /usr/local/bin
+    chmod +x /usr/local/bin/kubectl
+    popd > /dev/null
+    rm -rf $tmp_dir
+}
+
+get_helm () {
+    # Download specified version of helm
+    # Usage: get_helm <version>
+    version="${1}"
+    tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
+    pushd $tmp_dir > /dev/null
+    curl -LsOf "https://get.helm.sh/helm-v${version}-linux-amd64.tar.gz" ||\
+        { printf "Failed to download helm. %d\n" $?; return 1; }
+    tar zxf "helm-v${version}-linux-amd64.tar.gz"
+    mv ./linux-amd64/helm /usr/local/bin/helm
+    popd > /dev/null
+    rm -rf $tmp_dir
+}
+
+get_direnv () {
+    # Download specified version of direnv
+    # Usage: get_direnv <version>
+    version="${1}"
+    tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
+    pushd $tmp_dir > /dev/null
+    curl -LsOf "https://github.com/direnv/direnv/releases/download/v${version}/direnv.linux-amd64" ||\
+        { printf "Failed to download direnv. %d\n" $?; return 1; }
+    chmod +x direnv.linux-amd64
+    mv direnv.linux-amd64 /usr/local/bin/direnv
+    popd > /dev/null
+    rm -rf $tmp_dir
+}
+
+get_envkey () {
+    # Download specified version of envkey-source
+    # Usage: get_envkey <version>
+    version="${1}"
+    tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
+    pushd $tmp_dir > /dev/null
+    curl -LsOf "https://github.com/envkey/envkey-source/releases/download/v${version}/envkey-source_${version}_linux_amd64.tar.gz" ||\
+        { printf "Failed to download envkey. %d\n" $?; return 1; }
+    tar zxf "envkey-source_${version}_linux_amd64.tar.gz"
+    mv envkey-source /usr/local/bin/envkey-source
+    popd > /dev/null
+    rm -rf $tmp_dir
+}
+
+get_aws_iam_authenticator () {
+    version="${1}"
+    tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
+    pushd $tmp_dir > /dev/null
+    curl -LsOf "https://amazon-eks.s3-us-west-2.amazonaws.com/${version}/2019-08-22/bin/linux/amd64/aws-iam-authenticator" ||\
+        { printf "Failed to download envkey. %d\n" $?; return 1; }
+    chmod +x aws-iam-authenticator
+    mv aws-iam-authenticator /usr/local/bin
+    popd > /dev/null
+    rm -rf $tmp_dir
+}
+
+terraform_init () {
+    TF_IN_AUTOMATION=true terraform init -no-color -input=false -upgrade=true -lock-timeout=120s | tee init.out
+    echo ${PIPESTATUS[0]}
+}
+
+terraform_plan () {
+    TF_IN_AUTOMATION=true terraform plan -no-color -detailed-exitcode -input=false -lock-timeout=120s -out=plan.tfplan | tee plan.out
+    case ${PIPESTATUS[0]} in
+    0)
+        echo "Plan succeeded, diff is empty (no changes)"
+        ;;
+    1)
+        echo "Plan failed (error)."
+        ;;
+    2)
+        echo "Plan succeeded, diff detected"
+        mv plan.tfplan ${ARTIFACTS_DIR}/$(basename $(pwd)).tfplan
+        ;;
+    *)
+        echo "Plan exited with unknown status: ${PIPESTATUS[0]}"
+        ;;
+    esac
+}
