@@ -1,12 +1,17 @@
-#!/bin/bash -ue
+#!/bin/bash -u
 source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"/util
-
+echo "::debug::Starting Plan"
+for v in $(printenv); do
+    echo "::debug::${v}}"
+done
 # These vars are required:
 # INPUT_DIRS: Colon separated list of directories (set by GitHub Actions).
 # SSH_PRIV_KEY: ssh private key with access to required module repos.
 # TERRAFORM_TOKEN: API Token for Terraform cloud.
+# GITHUB_TOKEN: API Token for GitHub.  Normally supplied by Actions.
+# GITHUB_EVENT_PATH: Path to JSON file describing the event. Normally supplied by Actions.
 # TERRAFORM_VERSION: Version of terraform to use.
-# ARTIFACTS_DIR: Where to store plans and other artifacts.
+# ARTIFACTS_DIR: Where to store plans and other artifacts. This should be within /github/workspace
 # KUBECTL_VERSION: Version of kubectl to use.
 # HELM_VERSION: Version of helm to use.
 # DIRENV_VERSION: Version of direnv to use.
@@ -27,13 +32,37 @@ get_aws_iam_authenticator ${AWS_IAM_AUTHENTICATOR_VERSION} || exit $?
 
 # Process each directory in INPUT_DIRS.
 tf_dirs=(${INPUT_DIRS//:/ })
+errors=0
+diffs=0
 for dir in ${tf_dirs[@]}; do
     pushd $dir > /dev/null
     if [ -f .envrc ]; then
         direnv allow
         eval $(direnv export bash)
     fi
-    terraform_init
-    terraform_plan
+    terraform_init &&\
+    terraform_plan || ((errors++))
     popd > /dev/null
 done
+
+if [ ${errors} -eq 0 ] && [ ${diffs} -eq 0 ]; then
+    echo 'No changes or errors detected... Nothing to do.'
+    exit 0
+fi
+
+DIFF_MESSAGE=""
+if [ ${diffs} -gt 0 ]; then
+    process_diffs
+fi
+
+ERROR_MESSAGE=""
+if [ ${errors} -gt 0 ]; then
+    process_errors
+fi
+
+comment_on_pr
+
+echo "::set-output name=errors::${errors}"
+echo "::set-output name=plans::${diffs}"
+
+#exit ${errors}

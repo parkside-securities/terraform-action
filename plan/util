@@ -1,12 +1,15 @@
 configure_ssh () {
-    mkdir -p ~/.ssh
-    echo "${SSH_PRIV_KEY}" | base64 -d > ~/.ssh/id_rsa
-    chmod 600 ~/.ssh/id_rsa
+    echo "Configuring SSH..."
+    # GitHub Actions requires that these be hard coded to /root instead of ~/
+    mkdir -p /root/.ssh
+    echo "${SSH_PRIV_KEY}" > /root/.ssh/id_rsa
+    chmod 600 /root/.ssh/id_rsa
 
-    ssh-keyscan github.com >> ~/.ssh/known_hosts
+    ssh-keyscan github.com >> /root/.ssh/known_hosts
 }
 
 configure_terraform () {
+    echo "Configuring terraform..."
     cat <<- EOF > ~/.terraformrc
 	credentials "app.terraform.io" {
 		token = "${TERRAFORM_TOKEN}"
@@ -15,10 +18,12 @@ EOF
 }
 
 configure_kubectl () {
+    echo "Configuring kubectl..."
     mkdir -p ~/.kube
 }
 
 mk_artifacts_dir () {
+    echo "Creating artifacts dir..."
     path="${1}"
     mkdir -p ${ARTIFACTS_DIR}
 }
@@ -29,6 +34,7 @@ get_terraform () {
     version="${1}"
     tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
     pushd $tmp_dir > /dev/null
+    echo "Downlaoding terraform..."
     curl -LsOf "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_amd64.zip" ||\
         { printf "Failed to download terraform. %d\n" $?; return 1; }
     unzip -q "terraform_${version}_linux_amd64.zip"
@@ -43,6 +49,7 @@ get_kubectl () {
     version="${1}"
     tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
     pushd $tmp_dir > /dev/null
+    echo "Downlaoding kubectl..."
     curl -LsOf "https://storage.googleapis.com/kubernetes-release/release/v${version}/bin/linux/amd64/kubectl" ||\
         { printf "Failed to download kubectl. %d\n" $?; return 1; }
     mv ./kubectl /usr/local/bin
@@ -57,6 +64,7 @@ get_helm () {
     version="${1}"
     tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
     pushd $tmp_dir > /dev/null
+    echo "Downlaoding helm..."
     curl -LsOf "https://get.helm.sh/helm-v${version}-linux-amd64.tar.gz" ||\
         { printf "Failed to download helm. %d\n" $?; return 1; }
     tar zxf "helm-v${version}-linux-amd64.tar.gz"
@@ -71,6 +79,7 @@ get_direnv () {
     version="${1}"
     tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
     pushd $tmp_dir > /dev/null
+    echo "Downlaoding direnv..."
     curl -LsOf "https://github.com/direnv/direnv/releases/download/v${version}/direnv.linux-amd64" ||\
         { printf "Failed to download direnv. %d\n" $?; return 1; }
     chmod +x direnv.linux-amd64
@@ -85,6 +94,7 @@ get_envkey () {
     version="${1}"
     tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
     pushd $tmp_dir > /dev/null
+    echo "Downlaoding envkey-source..."
     curl -LsOf "https://github.com/envkey/envkey-source/releases/download/v${version}/envkey-source_${version}_linux_amd64.tar.gz" ||\
         { printf "Failed to download envkey. %d\n" $?; return 1; }
     tar zxf "envkey-source_${version}_linux_amd64.tar.gz"
@@ -97,6 +107,7 @@ get_aws_iam_authenticator () {
     version="${1}"
     tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
     pushd $tmp_dir > /dev/null
+    echo "Downlaoding aws-iam-authenticator..."
     curl -LsOf "https://amazon-eks.s3-us-west-2.amazonaws.com/${version}/2019-08-22/bin/linux/amd64/aws-iam-authenticator" ||\
         { printf "Failed to download envkey. %d\n" $?; return 1; }
     chmod +x aws-iam-authenticator
@@ -106,25 +117,87 @@ get_aws_iam_authenticator () {
 }
 
 terraform_init () {
-    TF_IN_AUTOMATION=true terraform init -no-color -input=false -upgrade=true -lock-timeout=120s | tee init.out
-    echo ${PIPESTATUS[0]}
+    TF_IN_AUTOMATION=true terraform init -no-color -input=false -upgrade=true -lock-timeout=120s 2>&1 | tee init.out
+    result=${PIPESTATUS[0]}
+    if [ ${result} -ne 0 ]; then
+        mv init.out ${ARTIFACTS_DIR}/$(basename $(pwd)).init.out.err
+    fi
+    return ${result}
 }
 
 terraform_plan () {
-    TF_IN_AUTOMATION=true terraform plan -no-color -detailed-exitcode -input=false -lock-timeout=120s -out=plan.tfplan | tee plan.out
+    TF_IN_AUTOMATION=true terraform plan -no-color -detailed-exitcode -input=false -lock-timeout=120s -out=plan.tfplan 2>&1 | tee plan.out
     case ${PIPESTATUS[0]} in
     0)
         echo "Plan succeeded, diff is empty (no changes)"
+        rm plan.out
+        result=0
         ;;
     1)
         echo "Plan failed (error)."
+        result=1
+        mv plan.out ${ARTIFACTS_DIR}/$(basename $(pwd)).plan.out.err
         ;;
     2)
         echo "Plan succeeded, diff detected"
         mv plan.tfplan ${ARTIFACTS_DIR}/$(basename $(pwd)).tfplan
+        mv plan.out ${ARTIFACTS_DIR}/$(basename $(pwd)).plan.out.diff
+        ((diffs++))
+        result=0
         ;;
     *)
         echo "Plan exited with unknown status: ${PIPESTATUS[0]}"
+        mv plan.out ${ARTIFACTS_DIR}/$(basename $(pwd)).plan.out.err
+        result=1
         ;;
     esac
+    return ${result}
+}
+
+process_diffs () {
+    local message="### Plans"
+    for diff in ${ARTIFACTS_DIR}/*.plan.out.diff; do
+        plan_output=$(cat ${diff} | sed -n -r '/-{72}/,/-{72}/{ /-{72}/d; p }')
+        message+="
+<details><summary>$(basename ${diff%.plan.out.diff})</summary>
+
+\`\`\`
+${plan_output}
+\`\`\`
+</details>
+
+"
+    done
+    #comment_on_pr "$(echo "${message}" | jq -R --slurp '{body: .}')"
+    DIFF_MESSAGE=${message}
+}
+
+process_errors () {
+  local message="### Errors"
+    for err in ${ARTIFACTS_DIR}/*.out.err; do
+        err_output=$(cat ${err})
+        message+="
+<details><summary>$(basename ${err%.*.out.err})</summary>
+
+\`\`\`
+${err_output}
+\`\`\`
+</details>
+
+"
+    done
+    #comment_on_pr "$(echo "${message}" | jq -R --slurp '{body: .}')"
+    ERROR_MESSAGE=${message}
+}
+
+comment_on_pr () {
+    if [ -f ${GITHUB_EVENT_PATH} ]; then
+        body="$(echo "${ERROR_MESSAGE} ${DIFF_MESSAGE}" | jq -R --slurp '{body: .}')"
+        comments_url=$(cat ${GITHUB_EVENT_PATH} | jq -r .pull_request.comments_url)
+        curl_out=$(echo ${body} | curl -s -S -H "Authorization: token ${GITHUB_TOKEN}" --header "Content-Type: application/json" --data @- "${comments_url}")
+        echo "::debug::${curl_out}"
+    else
+      echo "Can't find a GitHub event... Not commenting"
+      exit 0
+    fi
 }
