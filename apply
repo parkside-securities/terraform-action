@@ -1,0 +1,31 @@
+#!/bin/bash -u
+source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"/util
+
+tf_dirs=(${INPUT_DIRS//:/ })
+errors=0
+applies=0
+for dir in ${tf_dirs[@]}; do
+    planfile="${ARTIFACTS_DIR}/${dir}.tfplan"
+    if [[ -f ${planfile} ]]; then
+        pushd ${dir} > /dev/null
+        configure_environment
+        terraform_init &&
+        terraform_apply ${planfile} || ((errors++))
+        popd > /dev/null
+    fi
+done
+
+ERROR_MESSAGE=""
+if [ ${errors} -gt 0 ]; then
+    process_errors
+fi
+
+APPLY_MESSAGE=""
+if [ ${applies} -gt 0 ]; then
+    process_applies
+fi
+
+comment_on_pr
+
+echo "::set-output name=errors::${errors}"
+echo "::set-output name=applies::${applies}"

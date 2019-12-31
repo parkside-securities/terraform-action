@@ -1,6 +1,8 @@
 FROM golang:alpine
 
-COPY action /usr/local/bin
+COPY entrypoint /usr/local/bin
+COPY plan /usr/local/bin
+COPY apply /usr/local/bin
 COPY util /usr/local/bin
 
 RUN apk --update --no-cache add\
@@ -12,4 +14,4 @@ RUN apk --update --no-cache add\
     git\
     openssh
 
-ENTRYPOINT ["action"]
+ENTRYPOINT ["entrypoint"]

@@ -1,15 +1,16 @@
-# Terraform plan Github Action.
+# Terraform Github Action.
 
-This Action runs init and plan against a list of directories (such as those found in `terraform-live`).  If all plans succeed, and diffs are detected, then any diff (plan -out) files are stored as artifacts in Actions.  These should be applied during the PR Merge workflow.
+This Action runs init and plan or apply against a list of directories (such as those found in `terraform-live`).  If all plans succeed, and diffs are detected, then any diff (plan -out) files are stored as artifacts in Actions.  These should be applied during the PR Merge workflow.
 
 Additionally, any diffs or errors are included in the PR comments.
 ![](https://user-images.githubusercontent.com/39421615/71298410-cba7c080-233c-11ea-8738-93d91ab7e148.png)
 
-This Action only has a single required input:
+This Action has two required inputs:
 
 | INPUT                         | DESCRIPTION                                                    |
 |-------------------------------|----------------------------------------------------------------|
 | dirs                          | Colon delimited list of directories to process.                |
+| cmd                           | Command to run.  Valid choices are `plan | apply`.             |
 
 
 Additionally, several environment variables are required:

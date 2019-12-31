@@ -5,6 +5,9 @@ inputs:
   dirs:
     description: 'Colon delimited list of directories to process.'
     required: true
+  cmd:
+    description: 'Command to run.  Valid choices are `plan | apply'
+    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
