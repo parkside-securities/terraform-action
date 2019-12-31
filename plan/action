@@ -7,6 +7,7 @@ done
 # These vars are required:
 # INPUT_DIRS: Colon separated list of directories (set by GitHub Actions).
 # SSH_PRIV_KEY: ssh private key with access to required module repos.
+# SSH_PRIV_KEY_B64: Base64 encoded SSH_PRIV_KEY.  Ignored if SSH_PRIV_KEY is set.
 # TERRAFORM_TOKEN: API Token for Terraform cloud.
 # GITHUB_TOKEN: API Token for GitHub.  Normally supplied by Actions.
 # GITHUB_EVENT_PATH: Path to JSON file describing the event. Normally supplied by Actions.
