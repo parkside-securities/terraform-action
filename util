@@ -172,6 +172,7 @@ terraform_apply () {
         mv apply.out ${ARTIFACTS_DIR}/$(basename $(pwd)).apply.out.err
     else
         mv apply.out ${ARTIFACTS_DIR}/$(basename $(pwd)).apply.out
+        ((applies++))
     fi
     return ${result}
 }

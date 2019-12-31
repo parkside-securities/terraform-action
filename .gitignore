@@ -5,3 +5,4 @@ artifacts
 *.tfplan
 *.out
 *.tfstate
+.envrc_local
