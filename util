@@ -20,6 +20,13 @@ configure_terraform () {
 EOF
 }
 
+configure_environment () {
+    if [ -f .envrc ]; then
+        direnv allow
+        eval $(direnv export bash)
+    fi
+}
+
 configure_kubectl () {
     echo "Configuring kubectl..."
     mkdir -p ~/.kube
@@ -137,7 +144,7 @@ terraform_plan () {
         result=0
         ;;
     1)
-        echo "Plan failed (error)."
+        echo "::error:: Plan failed (error)."
         result=1
         mv plan.out ${ARTIFACTS_DIR}/$(basename $(pwd)).plan.out.err
         ;;
@@ -149,11 +156,23 @@ terraform_plan () {
         result=0
         ;;
     *)
-        echo "Plan exited with unknown status: ${PIPESTATUS[0]}"
+        echo "::warning::  Plan exited with unknown status: ${PIPESTATUS[0]}"
         mv plan.out ${ARTIFACTS_DIR}/$(basename $(pwd)).plan.out.err
         result=1
         ;;
     esac
+    return ${result}
+}
+
+terraform_apply () {
+    planfile="${1}"
+    TF_IN_AUTOMATION=true terraform apply -no-color -input=false -lock-timeout=120s ${planfile} 2>&1 | tee apply.out
+    result=${PIPESTATUS[0]}
+    if [ ${result} -ne 0 ]; then
+        mv apply.out ${ARTIFACTS_DIR}/$(basename $(pwd)).apply.out.err
+    else
+        mv apply.out ${ARTIFACTS_DIR}/$(basename $(pwd)).apply.out
+    fi
     return ${result}
 }
 
@@ -171,7 +190,6 @@ ${plan_output}
 
 "
     done
-    #comment_on_pr "$(echo "${message}" | jq -R --slurp '{body: .}')"
     DIFF_MESSAGE=${message}
 }
 
@@ -189,18 +207,34 @@ ${err_output}
 
 "
     done
-    #comment_on_pr "$(echo "${message}" | jq -R --slurp '{body: .}')"
     ERROR_MESSAGE=${message}
+}
+
+process_applies () {
+  local message="### Applies"
+    for apply in ${ARTIFACTS_DIR}/*.apply.out; do
+        apply_output=$(cat ${apply})
+        message+="
+<details><summary>$(basename ${apply%.*.apply.out})</summary>
+
+\`\`\`
+${apply_output}
+\`\`\`
+</details>
+
+"
+    done
+    APPLY_MESSAGE=${message}
 }
 
 comment_on_pr () {
     if [ -f ${GITHUB_EVENT_PATH} ]; then
-        body="$(echo "${ERROR_MESSAGE} ${DIFF_MESSAGE}" | jq -R --slurp '{body: .}')"
+        body="$(echo "${ERROR_MESSAGE:-} ${DIFF_MESSAGE:-} ${APPLY_MESSAGE:-}" | jq -R --slurp '{body: .}')"
         comments_url=$(cat ${GITHUB_EVENT_PATH} | jq -r .pull_request.comments_url)
         curl_out=$(echo ${body} | curl -s -S -H "Authorization: token ${GITHUB_TOKEN}" --header "Content-Type: application/json" --data @- "${comments_url}")
         echo "::debug::${curl_out}"
     else
-      echo "Can't find a GitHub event... Not commenting"
+      echo "::warning:: Can't find a GitHub event... Not commenting"
       exit 0
     fi
 }

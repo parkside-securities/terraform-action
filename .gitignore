@@ -1,2 +1,7 @@
 .DS_Store
 artifacts
+*.env
+.terraform
+*.tfplan
+*.out
+*.tfstate
