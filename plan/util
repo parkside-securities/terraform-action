@@ -2,7 +2,7 @@ configure_ssh () {
     echo "Configuring SSH..."
     # GitHub Actions requires that these be hard coded to /root instead of ~/
     mkdir -p /root/.ssh
-    if [[ -z ${SSH_PRIV_KEY} ]]; then
+    if [[ -z ${SSH_PRIV_KEY:-} ]]; then
         SSH_PRIV_KEY=$(echo "${SSH_PRIV_KEY_B64}" | base64 -d)
     fi
     echo "${SSH_PRIV_KEY}" > /root/.ssh/id_rsa
