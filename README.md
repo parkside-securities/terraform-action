@@ -26,6 +26,7 @@ Additionally, several environment variables are required:
 | ARTIFACTS_DIR                 | Directory to store generated plan files.                       |
 | TERRAFORM_TOKEN               | Terraform Cloud API key (Store in GitHub Secrets).             |
 | SSH_PRIV_KEY                  | SSH private key (for TF modules) (Store in GitHub Secrets).    |
-| GITHUB_TOKEN:                 | GitHub API token (Supplied by default in secrets.GITHUB_TOKEN).|
+| GITHUB_TOKEN                  | GitHub API token (Supplied by default in secrets.GITHUB_TOKEN).|
+| DRYRUN                        | Apply will not run unless this is explicitly set to 'false'.   |
 
 See: examples/pr_workflow.yaml

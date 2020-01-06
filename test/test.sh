@@ -26,5 +26,6 @@ docker run -it \
   -e SSH_PRIV_KEY_B64=${SSH_PRIV_KEY_B64}\
   -e GITHUB_TOKEN=${GITHUB_TOKEN}\
   -e INPUT_CMD=${INPUT_CMD}\
+  -e DRYRUN=false\
   ${BUILD}
 docker rmi ${BUILD}

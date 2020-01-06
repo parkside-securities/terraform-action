@@ -44,7 +44,7 @@ get_terraform () {
     version="${1}"
     tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
     pushd $tmp_dir > /dev/null
-    echo "Downlaoding terraform..."
+    echo "Downloading terraform..."
     curl -LsOf "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_amd64.zip" ||\
         { printf "Failed to download terraform. %d\n" $?; return 1; }
     unzip -q "terraform_${version}_linux_amd64.zip"
@@ -59,7 +59,7 @@ get_kubectl () {
     version="${1}"
     tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
     pushd $tmp_dir > /dev/null
-    echo "Downlaoding kubectl..."
+    echo "Downloading kubectl..."
     curl -LsOf "https://storage.googleapis.com/kubernetes-release/release/v${version}/bin/linux/amd64/kubectl" ||\
         { printf "Failed to download kubectl. %d\n" $?; return 1; }
     mv ./kubectl /usr/local/bin
@@ -74,7 +74,7 @@ get_helm () {
     version="${1}"
     tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
     pushd $tmp_dir > /dev/null
-    echo "Downlaoding helm..."
+    echo "Downloading helm..."
     curl -LsOf "https://get.helm.sh/helm-v${version}-linux-amd64.tar.gz" ||\
         { printf "Failed to download helm. %d\n" $?; return 1; }
     tar zxf "helm-v${version}-linux-amd64.tar.gz"
@@ -89,7 +89,7 @@ get_direnv () {
     version="${1}"
     tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
     pushd $tmp_dir > /dev/null
-    echo "Downlaoding direnv..."
+    echo "Downloading direnv..."
     curl -LsOf "https://github.com/direnv/direnv/releases/download/v${version}/direnv.linux-amd64" ||\
         { printf "Failed to download direnv. %d\n" $?; return 1; }
     chmod +x direnv.linux-amd64
@@ -104,7 +104,7 @@ get_envkey () {
     version="${1}"
     tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
     pushd $tmp_dir > /dev/null
-    echo "Downlaoding envkey-source..."
+    echo "Downloading envkey-source..."
     curl -LsOf "https://github.com/envkey/envkey-source/releases/download/v${version}/envkey-source_${version}_linux_amd64.tar.gz" ||\
         { printf "Failed to download envkey. %d\n" $?; return 1; }
     tar zxf "envkey-source_${version}_linux_amd64.tar.gz"
@@ -117,7 +117,7 @@ get_aws_iam_authenticator () {
     version="${1}"
     tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
     pushd $tmp_dir > /dev/null
-    echo "Downlaoding aws-iam-authenticator..."
+    echo "Downloading aws-iam-authenticator..."
     curl -LsOf "https://amazon-eks.s3-us-west-2.amazonaws.com/${version}/2019-08-22/bin/linux/amd64/aws-iam-authenticator" ||\
         { printf "Failed to download envkey. %d\n" $?; return 1; }
     chmod +x aws-iam-authenticator
@@ -166,13 +166,20 @@ terraform_plan () {
 
 terraform_apply () {
     planfile="${1}"
-    TF_IN_AUTOMATION=true terraform apply -no-color -input=false -lock-timeout=120s ${planfile} 2>&1 | tee apply.out
-    result=${PIPESTATUS[0]}
-    if [ ${result} -ne 0 ]; then
-        mv apply.out ${ARTIFACTS_DIR}/$(basename $(pwd)).apply.out.err
+    apply_cmd="terraform apply -no-color -input=false -lock-timeout=120s ${planfile}" 
+    if [[ ${DRYRUN:-} == "false" ]]; then
+        ${apply_cmd} 2>&1 | tee apply.out
+        result=${PIPESTATUS[0]}
+        if [ ${result} -ne 0 ]; then
+            mv apply.out ${ARTIFACTS_DIR}/$(basename $(pwd)).apply.out.err
+        else
+            mv apply.out ${ARTIFACTS_DIR}/$(basename $(pwd)).apply.out
+            ((applies++))
+        fi
     else
-        mv apply.out ${ARTIFACTS_DIR}/$(basename $(pwd)).apply.out
-        ((applies++))
+        echo "DRYRUN mode active... No changes will be made.  The command to run is:"
+        echo "${apply_cmd}"
+        result=0
     fi
     return ${result}
 }

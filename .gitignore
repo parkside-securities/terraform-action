@@ -4,5 +4,5 @@ artifacts
 .terraform
 *.tfplan
 *.out
-*.tfstate
+*.tfstate*
 .envrc_local
