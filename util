@@ -246,3 +246,16 @@ comment_on_pr () {
       exit 0
     fi
 }
+
+get_diff_dirs () {
+    # Returns a list of directories changed between BASE and HEAD.
+    base=${1}
+    dirs=""
+    diffs=$(git --no-pager diff --name-only ${base} | cut -d/ -f1 | uniq)
+    for dir in ${diffs}; do
+        if [ -d ${dir} ]; then
+            dirs+="${dir}:"
+        fi
+    done
+    return ${dirs}
+}

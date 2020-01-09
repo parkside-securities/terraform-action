@@ -10,7 +10,7 @@ This Action has two required inputs:
 | INPUT                         | DESCRIPTION                                                    |
 |-------------------------------|----------------------------------------------------------------|
 | dirs                          | Colon delimited list of directories to process.                |
-| cmd                           | Command to run.  Valid choices are `plan | apply`.             |
+| cmd                           | Command to run.  Valid choices are `plan | apply | test`.      |
 
 
 Additionally, several environment variables are required:

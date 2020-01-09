@@ -1,6 +1,9 @@
 #!/bin/bash
 BUILD=$(uuidgen | tr "[:upper:]" "[:lower:]")
-TF_ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"/fixture
+
+if [ -z ${TF_ROOT_DIR} ]; then
+  TF_ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"/fixture
+fi
 
 INPUT_CMD=${1}
 case $INPUT_CMD in
@@ -8,6 +11,8 @@ case $INPUT_CMD in
   rm -rf $(pwd)/artifacts/*
   ;;
 "apply")
+  ;;
+"test")
   ;;
 *)
   echo "Unknown command ${INPUT_CMD}"
@@ -28,4 +33,7 @@ docker run -it \
   -e INPUT_CMD=${INPUT_CMD}\
   -e DRYRUN=false\
   ${BUILD}
-docker rmi ${BUILD}
+
+if [ ! -z ${KEEP_IMAGE} ]; then
+  docker rmi ${BUILD}
+fi

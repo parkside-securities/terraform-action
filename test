@@ -1,0 +1,20 @@
+#!/bin/bash -u
+source ${SCRIPT_DIR}/util
+
+tf_dirs=(${INPUT_DIRS//:/ })
+failures=0
+passes=0
+for dir in ${tf_dirs[@]}; do
+    pushd $dir > /dev/null
+    configure_environment
+    if [ -d tests ]; then
+        pushd tests > /dev/null
+        go mod init "github.com/parkside-securities/${dir}"
+        go test || ((failures++))
+        popd > /dev/null
+    fi
+    popd > /dev/null
+done
+
+echo "::set-output name=failures::${failures}"
+echo "::set-output name=passes::${passes}"

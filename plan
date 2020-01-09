@@ -1,5 +1,5 @@
 #!/bin/bash -u
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"/util
+source ${SCRIPT_DIR}/util
 
 # Process each directory in INPUT_DIRS.
 tf_dirs=(${INPUT_DIRS//:/ })
