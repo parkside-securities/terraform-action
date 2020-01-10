@@ -14,6 +14,8 @@ case $INPUT_CMD in
   ;;
 "test")
   ;;
+"diff")
+  ;;
 *)
   echo "Unknown command ${INPUT_CMD}"
   exit 2

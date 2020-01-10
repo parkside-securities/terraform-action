@@ -257,5 +257,5 @@ get_diff_dirs () {
             dirs+="${dir}:"
         fi
     done
-    return ${dirs}
+    echo "::set-ouput:: name=chage_dirs::${dirs}"
 }

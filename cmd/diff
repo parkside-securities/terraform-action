@@ -1,4 +1,4 @@
 #!/bin/bash -u
 source ${SCRIPT_DIR}/util
 
-echo "::set-output name=changed::$(get_diff_dirs)"
+get_diff_dirs master
