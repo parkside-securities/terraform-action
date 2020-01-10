@@ -1,9 +1,7 @@
 FROM golang:alpine
 
-COPY apply /usr/local/bin
+COPY cmd /usr/local/bin
 COPY entrypoint /usr/local/bin
-COPY plan /usr/local/bin
-COPY test /usr/local/bin
 COPY util /usr/local/bin
 
 RUN apk --update --no-cache add\

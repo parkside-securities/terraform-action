@@ -18,3 +18,5 @@ done
 
 echo "::set-output name=failures::${failures}"
 echo "::set-output name=passes::${passes}"
+
+exit ${failures}
