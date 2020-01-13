@@ -8,5 +8,7 @@ get_helm                  ${HELM_VERSION}                  || exit $?
 get_direnv                ${DIRENV_VERSION}                || exit $?
 get_envkey                ${ENVKEY_VERSION}                || exit $?
 get_aws_iam_authenticator ${AWS_IAM_AUTHENTICATOR_VERSION} || exit $?
+
+echo "::set-env name=PATH::${GITHUB_WORKSPACE}/bin:${PATH}"
 echo "::debug:: Adding ${GITHUB_WORKSPACE}/bin to PATH"
 echo "::add-path::${GITHUB_WORKSPACE}/bin"
