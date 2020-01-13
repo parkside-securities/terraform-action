@@ -1,8 +1,6 @@
 #!/bin/bash -u
 source ${SCRIPT_DIR}/util
 
-echo "INPUT_DIRS=${INPUT_DIRS}"
-
 tf_dirs=(${INPUT_DIRS//:/ })
 failures=0
 passes=0
