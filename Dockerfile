@@ -13,7 +13,7 @@ RUN apk --update --no-cache add\
     openssl\
     jq\
     git\
-    openssh;\
-    pip3 install /usr/local/bin/envkey-action
+    openssh
+    #pip3 install /usr/local/bin/envkey-action
 
 ENTRYPOINT ["entrypoint"]
