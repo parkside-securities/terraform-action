@@ -1,4 +1,4 @@
 #!/bin/bash -u
 source ${SCRIPT_DIR}/util
 
-get_diff_dirs master
+get_diff_dirs ${INPUT_BASE}
