@@ -1,0 +1,4 @@
+#!/bin/bash -u
+source ${SCRIPT_DIR}/util
+
+envkey-action

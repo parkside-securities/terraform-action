@@ -5,6 +5,7 @@ COPY entrypoint /usr/local/bin
 COPY util /usr/local/bin
 
 RUN apk --update --no-cache add\
+    ca-certificates\
     build-base\
     python3\
     bash\
@@ -12,6 +13,8 @@ RUN apk --update --no-cache add\
     openssl\
     jq\
     git\
-    openssh
+    openssh;\
+    pip3 install /usr/local/bin/envkey-action;\
+    rm -rf /usr/local/bin/envkey-action
 
 ENTRYPOINT ["entrypoint"]
