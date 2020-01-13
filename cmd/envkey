@@ -1,4 +1,7 @@
 #!/bin/bash -u
 source ${SCRIPT_DIR}/util
 
+ls -l /usr/local/bin
+
+
 envkey-action
