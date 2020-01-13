@@ -48,7 +48,7 @@ get_terraform () {
     curl -LsOf "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_amd64.zip" ||\
         { printf "Failed to download terraform. %d\n" $?; return 1; }
     unzip -q "terraform_${version}_linux_amd64.zip"
-    mv ./terraform ~/bin
+    mv ./terraform ${HOME}/bin
     popd > /dev/null
     rm -rf $tmp_dir
 }
@@ -62,8 +62,8 @@ get_kubectl () {
     echo "Downloading kubectl..."
     curl -LsOf "https://storage.googleapis.com/kubernetes-release/release/v${version}/bin/linux/amd64/kubectl" ||\
         { printf "Failed to download kubectl. %d\n" $?; return 1; }
-    mv ./kubectl ~/bin
-    chmod +x ~/bin/kubectl
+    mv ./kubectl ${HOME}/bin
+    chmod +x ${HOME}/bin/kubectl
     popd > /dev/null
     rm -rf $tmp_dir
 }
@@ -78,7 +78,7 @@ get_helm () {
     curl -LsOf "https://get.helm.sh/helm-v${version}-linux-amd64.tar.gz" ||\
         { printf "Failed to download helm. %d\n" $?; return 1; }
     tar zxf "helm-v${version}-linux-amd64.tar.gz"
-    mv ./linux-amd64/helm ~/bin/helm
+    mv ./linux-amd64/helm ${HOME}/bin/helm
     popd > /dev/null
     rm -rf $tmp_dir
 }
@@ -93,7 +93,7 @@ get_direnv () {
     curl -LsOf "https://github.com/direnv/direnv/releases/download/v${version}/direnv.linux-amd64" ||\
         { printf "Failed to download direnv. %d\n" $?; return 1; }
     chmod +x direnv.linux-amd64
-    mv direnv.linux-amd64 ~/bin/direnv
+    mv direnv.linux-amd64 ${HOME}/bin/direnv
     popd > /dev/null
     rm -rf $tmp_dir
 }
@@ -108,7 +108,7 @@ get_envkey () {
     curl -LsOf "https://github.com/envkey/envkey-source/releases/download/v${version}/envkey-source_${version}_linux_amd64.tar.gz" ||\
         { printf "Failed to download envkey. %d\n" $?; return 1; }
     tar zxf "envkey-source_${version}_linux_amd64.tar.gz"
-    mv envkey-source ~/bin/envkey-source
+    mv envkey-source ${HOME}/bin/envkey-source
     popd > /dev/null
     rm -rf $tmp_dir
 }
@@ -121,7 +121,7 @@ get_aws_iam_authenticator () {
     curl -LsOf "https://amazon-eks.s3-us-west-2.amazonaws.com/${version}/2019-08-22/bin/linux/amd64/aws-iam-authenticator" ||\
         { printf "Failed to download envkey. %d\n" $?; return 1; }
     chmod +x aws-iam-authenticator
-    mv aws-iam-authenticator ~/bin
+    mv aws-iam-authenticator ${HOME}/bin
     popd > /dev/null
     rm -rf $tmp_dir
 }
