@@ -2,6 +2,11 @@
 export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source ${SCRIPT_DIR}/util
 
+# Dump the environment if we're in debug mode.
+for var in $(printenv); do
+    echo "::debug:: ${var}"
+done
+
 # SSH_PRIV_KEY: ssh private key with access to required module repos.
 # SSH_PRIV_KEY_B64: Base64 encoded SSH_PRIV_KEY.  Ignored if SSH_PRIV_KEY is set.
 # INPUT_DIRS: Colon separated list of directories (set by GitHub Actions).

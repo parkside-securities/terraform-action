@@ -1,7 +1,3 @@
-for var in $(printenv); do
-    echo "::debug:: ${var}"
-done
-
 configure_ssh () {
     echo "Configuring SSH..."
     # GitHub Actions requires that these be hard coded to /root instead of ~/
