@@ -9,8 +9,7 @@ for dir in ${tf_dirs[@]}; do
     configure_environment
     if [ -d tests ]; then
         pushd tests > /dev/null
-        go mod init "github.com/parkside-securities/${dir}"
-        go test || ((failures++))
+        run_test
         popd > /dev/null
     fi
     popd > /dev/null

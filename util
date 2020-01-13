@@ -190,6 +190,19 @@ terraform_apply () {
     return ${result}
 }
 
+run_terratest_test () {
+    go mod init "github.com/parkside-securities/$(basename $(pwd))"
+    go test 2>&1 | tee test.out
+    result=${PIPESTATUS[0]}
+    if [ ${result} -ne 0 ]; then
+        echo "::error:: Test failed: $(basename $(pwd))"
+        mv test.out ${ARTIFACTS_DIR}/$(basename $(pwd)).test.out.err
+    else
+        mv test.out ${ARTIFACTS_DIR}/$(basename $(pwd)).test.out
+    fi
+    return ${result}
+}
+
 process_diffs () {
     local message="### Plans"
     for diff in ${ARTIFACTS_DIR}/*.plan.out.diff; do
