@@ -1,7 +1,4 @@
 #!/bin/bash -u
 source ${SCRIPT_DIR}/util
 
-ls -l /usr/local/bin/envkey-action
-
-
-#envkey-action
+python3 /usr/local/bin/envkey_action.py
