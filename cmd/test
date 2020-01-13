@@ -9,7 +9,7 @@ for dir in ${tf_dirs[@]}; do
     configure_environment
     if [ -d tests ]; then
         pushd tests > /dev/null
-        run_test
+        run_terratest_test
         popd > /dev/null
     fi
     popd > /dev/null

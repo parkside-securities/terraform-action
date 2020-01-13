@@ -197,8 +197,10 @@ run_terratest_test () {
     if [ ${result} -ne 0 ]; then
         echo "::error:: Test failed: $(basename $(pwd))"
         mv test.out ${ARTIFACTS_DIR}/$(basename $(pwd)).test.out.err
+        ((failures++))
     else
         mv test.out ${ARTIFACTS_DIR}/$(basename $(pwd)).test.out
+        ((passes++))
     fi
     return ${result}
 }
