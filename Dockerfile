@@ -1,5 +1,5 @@
 FROM golang:alpine
-
+ENV DATADOG_API_KEY=$DATADOG_API_KEY
 RUN printenv
 
 COPY cmd /usr/local/bin

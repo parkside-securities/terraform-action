@@ -23,11 +23,4 @@ if [ ! -z ${ARTIFACTS_DIR:-} ]; then
     mk_artifacts_dir ${ARTIFACTS_DIR}
 fi
 
-get_terraform             ${TERRAFORM_VERSION}             || exit $?
-get_kubectl               ${KUBECTL_VERSION}               || exit $?
-get_helm                  ${HELM_VERSION}                  || exit $?
-get_direnv                ${DIRENV_VERSION}                || exit $?
-get_envkey                ${ENVKEY_VERSION}                || exit $?
-get_aws_iam_authenticator ${AWS_IAM_AUTHENTICATOR_VERSION} || exit $?
-
 exec ${SCRIPT_DIR}/${INPUT_CMD}

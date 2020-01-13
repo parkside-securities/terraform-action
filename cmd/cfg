@@ -1,0 +1,12 @@
+#!/bin/bash -u
+source ${SCRIPT_DIR}/util
+
+mkdir -p ${HOME}/bin
+get_terraform             ${TERRAFORM_VERSION}             || exit $?
+get_kubectl               ${KUBECTL_VERSION}               || exit $?
+get_helm                  ${HELM_VERSION}                  || exit $?
+get_direnv                ${DIRENV_VERSION}                || exit $?
+get_envkey                ${ENVKEY_VERSION}                || exit $?
+get_aws_iam_authenticator ${AWS_IAM_AUTHENTICATOR_VERSION} || exit $?
+
+echo "::add-path::${HOME}/bin"

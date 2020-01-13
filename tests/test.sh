@@ -5,8 +5,13 @@ if [ -z ${TF_ROOT_DIR} ]; then
   TF_ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"/fixture
 fi
 
+ENTRYPOINT="entrypoint"
+
 INPUT_CMD=${1}
 case $INPUT_CMD in
+"shell")
+  ENTRYPOINT="/bin/bash"
+  ;;
 "plan")
   rm -rf $(pwd)/artifacts/*
   ;;
@@ -17,6 +22,8 @@ case $INPUT_CMD in
 "diff")
   ;;
 "envkey")
+  ;;
+"cfg")
   ;;
 *)
   echo "Unknown command ${INPUT_CMD}"
@@ -36,6 +43,7 @@ docker run -it \
   -e GITHUB_TOKEN=${GITHUB_TOKEN}\
   -e INPUT_CMD=${INPUT_CMD}\
   -e DRYRUN=false\
+  --entrypoint=${ENTRYPOINT}\
   ${BUILD}
 
 if [ ! -z ${KEEP_IMAGE} ]; then
