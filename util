@@ -52,7 +52,6 @@ get_terraform () {
     popd > /dev/null
     rm -rf $tmp_dir
     echo "::debug:: terraform=${GITHUB_WORKSPACE}/bin/terraform"
-    echo "::debug:: terraform=$(file ${GITHUB_WORKSPACE}/bin/terraform)"
 }
 
 get_kubectl () {
