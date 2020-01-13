@@ -1,5 +1,7 @@
 FROM golang:alpine
 
+RUN printenv
+
 COPY cmd /usr/local/bin
 COPY entrypoint /usr/local/bin
 COPY util /usr/local/bin
