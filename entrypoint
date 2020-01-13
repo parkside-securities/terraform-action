@@ -19,7 +19,9 @@ configure_ssh
 configure_terraform
 configure_kubectl
 
-mk_artifacts_dir ${ARTIFACTS_DIR}
+if [ ! -z ${ARTIFACTS_DIR:-} ]; then
+    mk_artifacts_dir ${ARTIFACTS_DIR}
+fi
 
 get_terraform             ${TERRAFORM_VERSION}             || exit $?
 get_kubectl               ${KUBECTL_VERSION}               || exit $?

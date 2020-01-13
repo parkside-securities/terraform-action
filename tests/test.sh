@@ -16,6 +16,8 @@ case $INPUT_CMD in
   ;;
 "diff")
   ;;
+"envkey")
+  ;;
 *)
   echo "Unknown command ${INPUT_CMD}"
   exit 2
