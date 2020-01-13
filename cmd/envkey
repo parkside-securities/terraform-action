@@ -1,4 +1,4 @@
 #!/bin/bash -u
 source ${SCRIPT_DIR}/util
 
-python3 /usr/local/bin/envkey.py
+python3 /usr/local/bin/envkey_action.py
