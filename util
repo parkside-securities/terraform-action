@@ -258,5 +258,5 @@ get_diff_dirs () {
             dirs+="${dir}:"
         fi
     done
-    echo "::set-ouput:: name=change_dirs::${dirs}"
+    echo "::set-output:: name=change_dirs::${dirs}"
 }
