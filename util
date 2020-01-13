@@ -51,6 +51,7 @@ get_terraform () {
     mv ./terraform ${HOME}/bin
     popd > /dev/null
     rm -rf $tmp_dir
+    echo "::debug:: terraform=$(which terraform)"
 }
 
 get_kubectl () {
@@ -66,6 +67,7 @@ get_kubectl () {
     chmod +x ${HOME}/bin/kubectl
     popd > /dev/null
     rm -rf $tmp_dir
+    echo "::debug:: kubectl=$(which kubectl)"
 }
 
 get_helm () {
@@ -81,6 +83,7 @@ get_helm () {
     mv ./linux-amd64/helm ${HOME}/bin/helm
     popd > /dev/null
     rm -rf $tmp_dir
+    echo "::debug:: helm=$(which helm)"
 }
 
 get_direnv () {
@@ -96,6 +99,7 @@ get_direnv () {
     mv direnv.linux-amd64 ${HOME}/bin/direnv
     popd > /dev/null
     rm -rf $tmp_dir
+    echo "::debug:: direnv=$(which direnv)"
 }
 
 get_envkey () {
@@ -111,6 +115,7 @@ get_envkey () {
     mv envkey-source ${HOME}/bin/envkey-source
     popd > /dev/null
     rm -rf $tmp_dir
+    echo "::debug:: envkey=$(which envkey-source)"
 }
 
 get_aws_iam_authenticator () {
@@ -124,6 +129,7 @@ get_aws_iam_authenticator () {
     mv aws-iam-authenticator ${HOME}/bin
     popd > /dev/null
     rm -rf $tmp_dir
+    echo "::debug:: aws-iam-authenticator=$(which aws-iam-authenticator)"
 }
 
 terraform_init () {

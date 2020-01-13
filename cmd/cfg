@@ -8,5 +8,5 @@ get_helm                  ${HELM_VERSION}                  || exit $?
 get_direnv                ${DIRENV_VERSION}                || exit $?
 get_envkey                ${ENVKEY_VERSION}                || exit $?
 get_aws_iam_authenticator ${AWS_IAM_AUTHENTICATOR_VERSION} || exit $?
-
+echo "::debug:: Adding ${HOME}/bin to PATH"
 echo "::add-path::${HOME}/bin"
