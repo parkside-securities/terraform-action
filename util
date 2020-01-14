@@ -191,15 +191,15 @@ terraform_apply () {
 }
 
 run_terratest_test () {
-    go mod init "github.com/parkside-securities/$(basename $(pwd))"
+    go mod init "github.com/parkside-securities/$(basename $(pwd)/..)"
     TF_CLI_ARGS="-no-color" go test 2>&1 | tee test.out
     result=${PIPESTATUS[0]}
     if [ ${result} -ne 0 ]; then
-        echo "::error:: Test failed: $(basename $(pwd))"
-        mv test.out ${ARTIFACTS_DIR}/$(basename $(pwd)).test.out.err
+        echo "::error:: Test failed: $(basename $(pwd)/..)"
+        mv test.out ${ARTIFACTS_DIR}/$(basename $(pwd)/..).test.out.err
         ((failures++))
     else
-        mv test.out ${ARTIFACTS_DIR}/$(basename $(pwd)).test.out
+        mv test.out ${ARTIFACTS_DIR}/$(basename $(pwd)/..).test.out
         ((passes++))
     fi
     return ${result}
@@ -308,6 +308,7 @@ comment_on_pr () {
         body="$(echo "${ERROR_MESSAGE:-} ${DIFF_MESSAGE:-} ${APPLY_MESSAGE:-} ${PASS_MESSAGE:-}" | jq -R --slurp '{body: .}')"
         echo "::debug:: ${body}"
         comments_url=$(cat ${GITHUB_EVENT_PATH} | jq -r .pull_request.comments_url)
+        echo "::debug:: ${comments_url}"
         curl_out=$(echo ${body} | curl -s -S -H "Authorization: token ${GITHUB_TOKEN}" --header "Content-Type: application/json" --data @- "${comments_url}")
         echo "::debug:: ${curl_out}"
     else
