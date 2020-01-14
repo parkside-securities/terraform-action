@@ -211,7 +211,7 @@ process_diffs () {
     if [ ${#diff_files[@]} -gt 0 ]; then
         echo "::debug:: Found ${#diff_files[@]} diff files."
         local message="### Plans"
-        for diff in diff_files; do
+        for diff in ${diff_files[@]}; do
             plan_output=$(cat ${diff} | sed -n -r '/-{72}/,/-{72}/{ /-{72}/d; p }')
             message+="
 <details><summary>$(basename ${diff%.plan.out.diff})</summary>
@@ -235,7 +235,7 @@ process_errors () {
     if [ ${#err_files[@]} -gt 0 ]; then
         echo "::debug:: Found ${#err_files[@]} err files."
         local message="### Errors"
-        for err in $err_files; do
+        for err in ${err_files[@]}; do
             err_output=$(cat ${err})
             message+="
 <details><summary>$(basename ${err%.*.out.err})</summary>
@@ -259,7 +259,7 @@ process_applies () {
     if [ ${#apply_files[@]} -gt 0 ]; then
         echo "::debug:: Found ${#apply_files[@]} apply files."
         local message="### Applies"
-        for apply in $apply_files; do
+        for apply in ${apply_files[@]}; do
             apply_output=$(cat ${apply})
             message+="
 <details><summary>$(basename ${apply%.*.apply.out})</summary>
@@ -283,7 +283,7 @@ process_passes () {
     if [ ${#pass_files[@]} -gt 0 ]; then
         echo "::debug:: Found ${#pass_files[@]} pass files."
         local message="### Pass"
-        for pass in $pass_files; do
+        for pass in ${pass_files[@]}; do
             pass_output=$(cat ${pass})
             message+="
 <details><summary>$(basename ${pass%.*.pass.out})</summary>
