@@ -18,17 +18,5 @@ if [ ${errors} -eq 0 ] && [ ${diffs} -eq 0 ]; then
     exit 0
 fi
 
-DIFF_MESSAGE=""
-if [ ${diffs} -gt 0 ]; then
-    process_diffs
-fi
-
-ERROR_MESSAGE=""
-if [ ${errors} -gt 0 ]; then
-    process_errors
-fi
-
-comment_on_pr
-
 echo "::set-output name=errors::${errors}"
 echo "::set-output name=plans::${diffs}"

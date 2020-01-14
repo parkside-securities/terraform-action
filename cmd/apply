@@ -15,17 +15,5 @@ for dir in ${tf_dirs[@]}; do
     fi
 done
 
-ERROR_MESSAGE=""
-if [ ${errors} -gt 0 ]; then
-    process_errors
-fi
-
-APPLY_MESSAGE=""
-if [ ${applies} -gt 0 ]; then
-    process_applies
-fi
-
-comment_on_pr
-
 echo "::set-output name=errors::${errors}"
 echo "::set-output name=applies::${applies}"
