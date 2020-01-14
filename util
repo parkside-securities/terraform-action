@@ -296,6 +296,9 @@ ${pass_output}
 "
         done
         PASS_MESSAGE=${message}
+        for line in ${PASS_MESSAGE[@]}; do
+            echo "::debug:: ${line}"
+        done
     else
         echo "::debug:: No pass files."
     fi
