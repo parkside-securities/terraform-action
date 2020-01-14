@@ -230,10 +230,14 @@ ${plan_output}
 }
 
 process_errors () {
-  local message="### Errors"
-    for err in ${ARTIFACTS_DIR}/*.out.err; do
-        err_output=$(cat ${err})
-        message+="
+    shopt -s nullglob
+    err_files=(${ARTIFACTS_DIR}/*.out.err)
+    if [ ${#err_files[@]} -gt 0 ]; then
+        echo "::debug:: Found ${#err_files[@]} err files."
+        local message="### Errors"
+        for err in $err_files; do
+            err_output=$(cat ${err})
+            message+="
 <details><summary>$(basename ${err%.*.out.err})</summary>
 
 \`\`\`
@@ -242,15 +246,22 @@ ${err_output}
 </details>
 
 "
-    done
-    ERROR_MESSAGE=${message}
+        done
+        ERROR_MESSAGE=${message}
+    else
+        echo "::debug:: No err files."
+    fi
 }
 
 process_applies () {
-  local message="### Applies"
-    for apply in ${ARTIFACTS_DIR}/*.apply.out; do
-        apply_output=$(cat ${apply})
-        message+="
+    shopt -s nullglob
+    apply_files=(${ARTIFACTS_DIR}/*.apply.out)
+    if [ ${#apply_files[@]} -gt 0 ]; then
+        echo "::debug:: Found ${#apply_files[@]} apply files."
+        local message="### Applies"
+        for apply in $apply_files; do
+            apply_output=$(cat ${apply})
+            message+="
 <details><summary>$(basename ${apply%.*.apply.out})</summary>
 
 \`\`\`
@@ -259,15 +270,22 @@ ${apply_output}
 </details>
 
 "
-    done
-    APPLY_MESSAGE=${message}
+        done
+        APPLY_MESSAGE=${message}
+    else
+        echo "::debug:: No apply files."
+    fi
 }
 
 process_passes () {
-  local message="### Pass"
-    for pass in ${ARTIFACTS_DIR}/*.test.out; do
-        pass_output=$(cat ${pass})
-        message+="
+    shopt -s nullglob
+    pass_files=(${ARTIFACTS_DIR}/*.test.out)
+    if [ ${#pass_files[@]} -gt 0 ]; then
+        echo "::debug:: Found ${#pass_files[@]} pass files."
+        local message="### Pass"
+        for pass in $pass_files; do
+            pass_output=$(cat ${pass})
+            message+="
 <details><summary>$(basename ${pass%.*.pass.out})</summary>
 
 \`\`\`
@@ -276,8 +294,11 @@ ${pass_output}
 </details>
 
 "
-    done
-    PASS_MESSAGE=${message}
+        done
+        PASS_MESSAGE=${message}
+    else
+        echo "::debug:: No pass files."
+    fi
 }
 
 comment_on_pr () {
