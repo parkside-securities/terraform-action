@@ -206,10 +206,13 @@ run_terratest_test () {
 }
 
 process_diffs () {
-    local message="### Plans"
-    for diff in ${ARTIFACTS_DIR}/*.plan.out.diff; do
-        plan_output=$(cat ${diff} | sed -n -r '/-{72}/,/-{72}/{ /-{72}/d; p }')
-        message+="
+    diff_files=${ARTIFACTS_DIR}/*.plan.out.diff
+    if [ ${#diff_files[@]} -gt 0 ]; then
+        echo "::debug:: Found ${#diff_files[@]} diff files."
+        local message="### Plans"
+        for diff in diff_files; do
+            plan_output=$(cat ${diff} | sed -n -r '/-{72}/,/-{72}/{ /-{72}/d; p }')
+            message+="
 <details><summary>$(basename ${diff%.plan.out.diff})</summary>
 
 \`\`\`
@@ -218,8 +221,11 @@ ${plan_output}
 </details>
 
 "
-    done
-    DIFF_MESSAGE=${message}
+        done
+        DIFF_MESSAGE=${message}
+    else
+        echo "::debug:: No diff files."
+    fi
 }
 
 process_errors () {
