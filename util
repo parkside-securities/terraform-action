@@ -192,7 +192,7 @@ terraform_apply () {
 
 run_terratest_test () {
     go mod init "github.com/parkside-securities/$(basename $(pwd))"
-    go test 2>&1 | tee test.out
+    TF_CLI_ARGS="-no-color" go test 2>&1 | tee test.out
     result=${PIPESTATUS[0]}
     if [ ${result} -ne 0 ]; then
         echo "::error:: Test failed: $(basename $(pwd))"
