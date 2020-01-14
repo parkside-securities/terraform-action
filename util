@@ -206,7 +206,8 @@ run_terratest_test () {
 }
 
 process_diffs () {
-    diff_files=${ARTIFACTS_DIR}/*.plan.out.diff
+    shopt -s nullglob
+    diff_files=(${ARTIFACTS_DIR}/*.plan.out.diff)
     if [ ${#diff_files[@]} -gt 0 ]; then
         echo "::debug:: Found ${#diff_files[@]} diff files."
         local message="### Plans"
