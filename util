@@ -191,17 +191,20 @@ terraform_apply () {
 }
 
 run_terratest_test () {
-    go mod init "github.com/parkside-securities/$(basename $(pwd)/..)"
+    local project=$(basename $(pwd))
+    pushd tests > /dev/null
+    go mod init "github.com/parkside-securities/${project}"
     TF_CLI_ARGS="-no-color" go test 2>&1 | tee test.out
     result=${PIPESTATUS[0]}
     if [ ${result} -ne 0 ]; then
-        echo "::error:: Test failed: $(basename $(pwd)/..)"
-        mv test.out ${ARTIFACTS_DIR}/$(basename $(pwd)/..).test.out.err
+        echo "::error:: Test failed: ${project}"
+        mv test.out ${ARTIFACTS_DIR}/${project}.test.out.err
         ((failures++))
     else
-        mv test.out ${ARTIFACTS_DIR}/$(basename $(pwd)/..).test.out
+        mv test.out ${ARTIFACTS_DIR}/${project}.test.out
         ((passes++))
     fi
+    popd > /dev/null
     return ${result}
 }
 
