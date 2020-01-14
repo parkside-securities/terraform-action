@@ -308,6 +308,7 @@ comment_on_pr () {
     if [ -f ${GITHUB_EVENT_PATH} ]; then
         echo "::debug:: Updating PR..."
         body="$(echo "${ERROR_MESSAGE:-} ${DIFF_MESSAGE:-} ${APPLY_MESSAGE:-} ${PASS_MESSAGE:-}" | jq -R --slurp '{body: .}')"
+        echo "::debug:: ${body}"
         comments_url=$(cat ${GITHUB_EVENT_PATH} | jq -r .pull_request.comments_url)
         curl_out=($(echo ${body} | curl -s -S -H "Authorization: token ${GITHUB_TOKEN}" --header "Content-Type: application/json" --data @- "${comments_url}"))
         for line in ${curl_out[@]}; do
