@@ -1,4 +1,0 @@
-{{ range (file.ReadDir "/tmp/foo") -}}
-{{- $f := path.Join "/tmp/foo" . -}}
-{{.}} content: {{ file.Read $f }}
-{{end}}

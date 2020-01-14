@@ -307,8 +307,8 @@ ${pass_output}
 
 comment_on_pr () {
     if [ -f ${GITHUB_EVENT_PATH} ]; then
-        echo "::debug:: Updating PR..."
-        body="{\"body\":\"${ERROR_MESSAGE:-} ${DIFF_MESSAGE:-} ${APPLY_MESSAGE:-} ${PASS_MESSAGE:-}\"}"
+        echo "::debug:: Updating PR..." 
+        body="$(echo "${PASS_MESSAGE:-} ${ERROR_MESSAGE:-} ${DIFF_MESSAGE:-} ${APPLY_MESSAGE:-}" | jq -R --slurp '{body: .}')"
         echo "::debug:: ${body}"
         comments_url=$(cat ${GITHUB_EVENT_PATH} | jq -r .pull_request.comments_url)
         echo "::debug:: ${comments_url}"
