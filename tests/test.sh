@@ -1,13 +1,29 @@
 #!/bin/bash
 BUILD=$(uuidgen | tr "[:upper:]" "[:lower:]")
-TF_ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"/fixture
+
+if [ -z ${TF_ROOT_DIR} ]; then
+  TF_ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"/fixture
+fi
+
+ENTRYPOINT="entrypoint"
 
 INPUT_CMD=${1}
 case $INPUT_CMD in
+"shell")
+  ENTRYPOINT="/bin/bash"
+  ;;
 "plan")
   rm -rf $(pwd)/artifacts/*
   ;;
 "apply")
+  ;;
+"test")
+  ;;
+"diff")
+  ;;
+"envkey")
+  ;;
+"cfg")
   ;;
 *)
   echo "Unknown command ${INPUT_CMD}"
@@ -27,5 +43,9 @@ docker run -it \
   -e GITHUB_TOKEN=${GITHUB_TOKEN}\
   -e INPUT_CMD=${INPUT_CMD}\
   -e DRYRUN=false\
+  --entrypoint=${ENTRYPOINT}\
   ${BUILD}
-docker rmi ${BUILD}
+
+if [ ! -z ${KEEP_IMAGE} ]; then
+  docker rmi ${BUILD}
+fi

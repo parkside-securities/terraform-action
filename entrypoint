@@ -1,5 +1,11 @@
 #!/bin/bash -u
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"/util
+export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+source ${SCRIPT_DIR}/util
+
+# Dump the environment if we're in debug mode.
+for var in $(printenv); do
+    echo "::debug:: ${var}"
+done
 
 # SSH_PRIV_KEY: ssh private key with access to required module repos.
 # SSH_PRIV_KEY_B64: Base64 encoded SSH_PRIV_KEY.  Ignored if SSH_PRIV_KEY is set.
@@ -18,13 +24,8 @@ configure_ssh
 configure_terraform
 configure_kubectl
 
-mk_artifacts_dir ${ARTIFACTS_DIR}
+if [ ! -z ${ARTIFACTS_DIR:-} ]; then
+    mk_artifacts_dir ${ARTIFACTS_DIR}
+fi
 
-get_terraform             ${TERRAFORM_VERSION}             || exit $?
-get_kubectl               ${KUBECTL_VERSION}               || exit $?
-get_helm                  ${HELM_VERSION}                  || exit $?
-get_direnv                ${DIRENV_VERSION}                || exit $?
-get_envkey                ${ENVKEY_VERSION}                || exit $?
-get_aws_iam_authenticator ${AWS_IAM_AUTHENTICATOR_VERSION} || exit $?
-
-exec ${INPUT_CMD}
+exec ${SCRIPT_DIR}/${INPUT_CMD}

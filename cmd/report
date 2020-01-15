@@ -1,0 +1,9 @@
+#!/bin/bash -u
+source ${SCRIPT_DIR}/util
+
+process_diffs
+process_errors
+process_applies
+process_passes
+
+comment_on_pr

@@ -1,0 +1,4 @@
+#!/bin/bash -u
+source ${SCRIPT_DIR}/util
+
+get_diff_dirs remotes/origin/${INPUT_BASE}

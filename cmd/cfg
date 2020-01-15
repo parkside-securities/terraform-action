@@ -1,0 +1,16 @@
+#!/bin/bash -u
+source ${SCRIPT_DIR}/util
+
+mkdir -p ${GITHUB_WORKSPACE}/bin
+get_terraform             ${TERRAFORM_VERSION}             || exit $?
+get_kubectl               ${KUBECTL_VERSION}               || exit $?
+get_helm                  ${HELM_VERSION}                  || exit $?
+get_direnv                ${DIRENV_VERSION}                || exit $?
+get_envkey                ${ENVKEY_VERSION}                || exit $?
+get_aws_iam_authenticator ${AWS_IAM_AUTHENTICATOR_VERSION} || exit $?
+
+echo "::set-env name=PATH::${GITHUB_WORKSPACE}/bin:${PATH}"
+echo "::debug:: Adding ${GITHUB_WORKSPACE}/bin to PATH"
+
+# This should work, but it doesn't...  Possibly a bug in Actions.
+# echo "::add-path::${GITHUB_WORKSPACE}/bin"

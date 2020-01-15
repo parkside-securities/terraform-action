@@ -48,9 +48,10 @@ get_terraform () {
     curl -LsOf "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_amd64.zip" ||\
         { printf "Failed to download terraform. %d\n" $?; return 1; }
     unzip -q "terraform_${version}_linux_amd64.zip"
-    mv ./terraform /usr/local/bin
+    mv ./terraform ${GITHUB_WORKSPACE}/bin
     popd > /dev/null
     rm -rf $tmp_dir
+    echo "::debug:: terraform=${GITHUB_WORKSPACE}/bin/terraform"
 }
 
 get_kubectl () {
@@ -62,10 +63,11 @@ get_kubectl () {
     echo "Downloading kubectl..."
     curl -LsOf "https://storage.googleapis.com/kubernetes-release/release/v${version}/bin/linux/amd64/kubectl" ||\
         { printf "Failed to download kubectl. %d\n" $?; return 1; }
-    mv ./kubectl /usr/local/bin
-    chmod +x /usr/local/bin/kubectl
+    mv ./kubectl ${GITHUB_WORKSPACE}/bin
+    chmod +x ${GITHUB_WORKSPACE}/bin/kubectl
     popd > /dev/null
     rm -rf $tmp_dir
+    echo "::debug:: kubectl=${GITHUB_WORKSPACE}/bin/kubectl"
 }
 
 get_helm () {
@@ -78,9 +80,10 @@ get_helm () {
     curl -LsOf "https://get.helm.sh/helm-v${version}-linux-amd64.tar.gz" ||\
         { printf "Failed to download helm. %d\n" $?; return 1; }
     tar zxf "helm-v${version}-linux-amd64.tar.gz"
-    mv ./linux-amd64/helm /usr/local/bin/helm
+    mv ./linux-amd64/helm ${GITHUB_WORKSPACE}/bin/helm
     popd > /dev/null
     rm -rf $tmp_dir
+    echo "::debug:: helm=${GITHUB_WORKSPACE}/bin/helm"
 }
 
 get_direnv () {
@@ -93,9 +96,10 @@ get_direnv () {
     curl -LsOf "https://github.com/direnv/direnv/releases/download/v${version}/direnv.linux-amd64" ||\
         { printf "Failed to download direnv. %d\n" $?; return 1; }
     chmod +x direnv.linux-amd64
-    mv direnv.linux-amd64 /usr/local/bin/direnv
+    mv direnv.linux-amd64 ${GITHUB_WORKSPACE}/bin/direnv
     popd > /dev/null
     rm -rf $tmp_dir
+    echo "::debug:: direnv=${GITHUB_WORKSPACE}/bin/direnv"
 }
 
 get_envkey () {
@@ -108,9 +112,10 @@ get_envkey () {
     curl -LsOf "https://github.com/envkey/envkey-source/releases/download/v${version}/envkey-source_${version}_linux_amd64.tar.gz" ||\
         { printf "Failed to download envkey. %d\n" $?; return 1; }
     tar zxf "envkey-source_${version}_linux_amd64.tar.gz"
-    mv envkey-source /usr/local/bin/envkey-source
+    mv envkey-source ${GITHUB_WORKSPACE}/bin/envkey-source
     popd > /dev/null
     rm -rf $tmp_dir
+    echo "::debug:: envkey=${GITHUB_WORKSPACE}/bin/envkey-source"
 }
 
 get_aws_iam_authenticator () {
@@ -121,9 +126,10 @@ get_aws_iam_authenticator () {
     curl -LsOf "https://amazon-eks.s3-us-west-2.amazonaws.com/${version}/2019-08-22/bin/linux/amd64/aws-iam-authenticator" ||\
         { printf "Failed to download envkey. %d\n" $?; return 1; }
     chmod +x aws-iam-authenticator
-    mv aws-iam-authenticator /usr/local/bin
+    mv aws-iam-authenticator ${GITHUB_WORKSPACE}/bin
     popd > /dev/null
     rm -rf $tmp_dir
+    echo "::debug:: aws-iam-authenticator=${GITHUB_WORKSPACE}/bin/aws-iam-authenticator"
 }
 
 terraform_init () {
@@ -184,12 +190,34 @@ terraform_apply () {
     return ${result}
 }
 
+run_terratest_test () {
+    local project=$(basename $(pwd))
+    pushd tests > /dev/null
+    go mod init "github.com/parkside-securities/${project}"
+    TF_CLI_ARGS="-no-color" go test 2>&1 | tee test.out
+    result=${PIPESTATUS[0]}
+    if [ ${result} -ne 0 ]; then
+        echo "::error:: Test failed: ${project}"
+        mv test.out ${ARTIFACTS_DIR}/${project}.test.out.err
+        ((failures++))
+    else
+        mv test.out ${ARTIFACTS_DIR}/${project}.test.out
+        ((passes++))
+    fi
+    popd > /dev/null
+    return ${result}
+}
+
 process_diffs () {
-    local message="### Plans"
-    for diff in ${ARTIFACTS_DIR}/*.plan.out.diff; do
-        plan_output=$(cat ${diff} | sed -n -r '/-{72}/,/-{72}/{ /-{72}/d; p }')
-        message+="
-<details><summary>$(basename ${diff%.plan.out.diff})</summary>
+    shopt -s nullglob
+    diff_files=(${ARTIFACTS_DIR}/*.plan.out.diff)
+    if [ ${#diff_files[@]} -gt 0 ]; then
+        echo "::debug:: Found ${#diff_files[@]} diff files."
+        local message="### Plans"
+        for diff in ${diff_files[@]}; do
+            plan_output=$(cat ${diff} | sed -n -r '/-{72}/,/-{72}/{ /-{72}/d; p }')
+            message+="
+<details><summary>$(basename ${diff%%.*})</summary>
 
 \`\`\`
 ${plan_output}
@@ -197,16 +225,23 @@ ${plan_output}
 </details>
 
 "
-    done
-    DIFF_MESSAGE=${message}
+        done
+        DIFF_MESSAGE=${message}
+    else
+        echo "::debug:: No diff files."
+    fi
 }
 
 process_errors () {
-  local message="### Errors"
-    for err in ${ARTIFACTS_DIR}/*.out.err; do
-        err_output=$(cat ${err})
-        message+="
-<details><summary>$(basename ${err%.*.out.err})</summary>
+    shopt -s nullglob
+    err_files=(${ARTIFACTS_DIR}/*.out.err)
+    if [ ${#err_files[@]} -gt 0 ]; then
+        echo "::debug:: Found ${#err_files[@]} err files."
+        local message="### Errors"
+        for err in ${err_files[@]}; do
+            err_output=$(cat ${err})
+            message+="
+<details><summary>$(basename ${err%%.*})</summary>
 
 \`\`\`
 ${err_output}
@@ -214,16 +249,23 @@ ${err_output}
 </details>
 
 "
-    done
-    ERROR_MESSAGE=${message}
+        done
+        ERROR_MESSAGE=${message}
+    else
+        echo "::debug:: No err files."
+    fi
 }
 
 process_applies () {
-  local message="### Applies"
-    for apply in ${ARTIFACTS_DIR}/*.apply.out; do
-        apply_output=$(cat ${apply})
-        message+="
-<details><summary>$(basename ${apply%.*.apply.out})</summary>
+    shopt -s nullglob
+    apply_files=(${ARTIFACTS_DIR}/*.apply.out)
+    if [ ${#apply_files[@]} -gt 0 ]; then
+        echo "::debug:: Found ${#apply_files[@]} apply files."
+        local message="### Applies"
+        for apply in ${apply_files[@]}; do
+            apply_output=$(cat ${apply})
+            message+="
+<details><summary>$(basename ${apply%%.*})</summary>
 
 \`\`\`
 ${apply_output}
@@ -231,18 +273,63 @@ ${apply_output}
 </details>
 
 "
-    done
-    APPLY_MESSAGE=${message}
+        done
+        APPLY_MESSAGE=${message}
+    else
+        echo "::debug:: No apply files."
+    fi
+}
+
+process_passes () {
+    shopt -s nullglob
+    pass_files=(${ARTIFACTS_DIR}/*.test.out)
+    if [ ${#pass_files[@]} -gt 0 ]; then
+        echo "::debug:: Found ${#pass_files[@]} pass files."
+        local message="### Pass"
+        for pass in ${pass_files[@]}; do
+            pass_output=$(cat ${pass})
+            message+="
+<details><summary>$(basename ${pass%%.*})</summary>
+
+\`\`\`
+${pass_output}
+\`\`\`
+</details>
+
+"
+        done
+        PASS_MESSAGE=${message}
+        echo "::debug:: ${PASS_MESSAGE}"
+    else
+        echo "::debug:: No pass files."
+    fi
 }
 
 comment_on_pr () {
     if [ -f ${GITHUB_EVENT_PATH} ]; then
-        body="$(echo "${ERROR_MESSAGE:-} ${DIFF_MESSAGE:-} ${APPLY_MESSAGE:-}" | jq -R --slurp '{body: .}')"
+        echo "::debug:: Updating PR..." 
+        body="$(echo "${PASS_MESSAGE:-} ${ERROR_MESSAGE:-} ${DIFF_MESSAGE:-} ${APPLY_MESSAGE:-}" | jq -R --slurp '{body: .}')"
+        echo "${body}" > ${ARTIFACTS_DIR}/report.json
         comments_url=$(cat ${GITHUB_EVENT_PATH} | jq -r .pull_request.comments_url)
-        curl_out=$(echo ${body} | curl -s -S -H "Authorization: token ${GITHUB_TOKEN}" --header "Content-Type: application/json" --data @- "${comments_url}")
-        echo "::debug::${curl_out}"
+        echo "::debug:: comments_url=${comments_url}"
+        curl_out=$(curl -s -S -H "Authorization: token ${GITHUB_TOKEN}" --header "Content-Type: application/json" --data @${ARTIFACTS_DIR}/report.json "${comments_url}")
+        echo "::debug:: ${curl_out}"
     else
-      echo "::warning:: Can't find a GitHub event... Not commenting"
-      exit 0
+      echo "::debug:: Can't find a GitHub event... Not commenting"
+      return 0
     fi
+}
+
+get_diff_dirs () {
+    # Returns a list of directories changed between BASE and HEAD.
+    base=${1}
+    dirs=""
+    git fetch --prune --unshallow > /dev/null
+    diffs=$(git --no-pager diff --name-only ${base} -- | cut -d/ -f1 | uniq)
+    for dir in ${diffs}; do
+        if [ -d ${dir} ]; then
+            dirs+="${dir}:"
+        fi
+    done
+    echo "::set-output name=change_dirs::${dirs}"
 }
