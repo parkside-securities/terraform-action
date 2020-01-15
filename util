@@ -309,10 +309,11 @@ comment_on_pr () {
     if [ -f ${GITHUB_EVENT_PATH} ]; then
         echo "::debug:: Updating PR..." 
         body="$(echo "${PASS_MESSAGE:-} ${ERROR_MESSAGE:-} ${DIFF_MESSAGE:-} ${APPLY_MESSAGE:-}" | jq -R --slurp '{body: .}')"
+        echo "${body}" > ${ARTIFACTS_DIR}/report.json
         echo "::debug:: ${body}"
         comments_url=$(cat ${GITHUB_EVENT_PATH} | jq -r .pull_request.comments_url)
         echo "::debug:: ${comments_url}"
-        curl_out=$(echo ${body} | curl -s -S -H "Authorization: token ${GITHUB_TOKEN}" --header "Content-Type: application/json" --data @- "${comments_url}")
+        curl_out=$(curl -s -S -H "Authorization: token ${GITHUB_TOKEN}" --header "Content-Type: application/json" --data @${ARTIFACTS_DIR}/report.json "${comments_url}")
         echo "::debug:: ${curl_out}"
     else
       echo "::debug:: Can't find a GitHub event... Not commenting"
