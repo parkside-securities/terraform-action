@@ -14,6 +14,6 @@ RUN apk --update --no-cache add\
     jq\
     git\
     openssh;\
-    pip3 install envkey
+    pip3 install envkey awscli
 
 ENTRYPOINT ["entrypoint"]

@@ -1,0 +1,8 @@
+#!/bin/bash -u
+
+aws s3 cp \
+    --exclude "*"\
+    --include "${INPUT_INCLUDE_FILTER}"\
+    --recursive\
+    ${INPUT_SRC}\
+    ${INPUT_DST}

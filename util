@@ -217,7 +217,7 @@ process_diffs () {
         for diff in ${diff_files[@]}; do
             plan_output=$(cat ${diff} | sed -n -r '/-{72}/,/-{72}/{ /-{72}/d; p }')
             message+="
-<details><summary>$(basename ${diff%.plan.out.diff})</summary>
+<details><summary>$(basename ${diff%%.*})</summary>
 
 \`\`\`
 ${plan_output}
@@ -241,7 +241,7 @@ process_errors () {
         for err in ${err_files[@]}; do
             err_output=$(cat ${err})
             message+="
-<details><summary>$(basename ${err%.*.out.err})</summary>
+<details><summary>$(basename ${err%%.*})</summary>
 
 \`\`\`
 ${err_output}
@@ -265,7 +265,7 @@ process_applies () {
         for apply in ${apply_files[@]}; do
             apply_output=$(cat ${apply})
             message+="
-<details><summary>$(basename ${apply%.*.apply.out})</summary>
+<details><summary>$(basename ${apply%%.*})</summary>
 
 \`\`\`
 ${apply_output}
@@ -289,7 +289,7 @@ process_passes () {
         for pass in ${pass_files[@]}; do
             pass_output=$(cat ${pass})
             message+="
-<details><summary>$(basename ${pass%.*.pass.out})</summary>
+<details><summary>$(basename ${pass%%.*})</summary>
 
 \`\`\`
 ${pass_output}
@@ -310,14 +310,13 @@ comment_on_pr () {
         echo "::debug:: Updating PR..." 
         body="$(echo "${PASS_MESSAGE:-} ${ERROR_MESSAGE:-} ${DIFF_MESSAGE:-} ${APPLY_MESSAGE:-}" | jq -R --slurp '{body: .}')"
         echo "${body}" > ${ARTIFACTS_DIR}/report.json
-        echo "::debug:: ${body}"
         comments_url=$(cat ${GITHUB_EVENT_PATH} | jq -r .pull_request.comments_url)
-        echo "::debug:: ${comments_url}"
+        echo "::debug:: comments_url=${comments_url}"
         curl_out=$(curl -s -S -H "Authorization: token ${GITHUB_TOKEN}" --header "Content-Type: application/json" --data @${ARTIFACTS_DIR}/report.json "${comments_url}")
         echo "::debug:: ${curl_out}"
     else
       echo "::debug:: Can't find a GitHub event... Not commenting"
-      exit 0
+      return 0
     fi
 }
 
