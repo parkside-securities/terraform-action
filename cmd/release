@@ -18,14 +18,16 @@ with open(os.environ.get('GITHUB_EVENT_PATH'), 'r') as f:
     EVENT = json.loads(f.read())
 logging.debug(EVENT)
 
-RELEASE_TEMPLATE = '''# Commits
+RELEASE_TEMPLATE = '''
 {% for k,v in commits.items() %}
+{% if v %}
 ## {{k.title()}}:
 |Message|Author|Commit|
 |-------|------|------|
 {% for item in v -%}
 |{{ item['commit']['message'].split('\n')[0] }}|![{{item['author']['login']}}]({{item['author']['avatar_url']}}&s=32 "{{item['author']['login']}}")|[{{ item['sha'][:7] }}]({{ item['commit']['url'] }})|
 {% endfor %}
+{% endif %}
 {% endfor %}
 '''
 
@@ -43,7 +45,10 @@ def get_releases():
 def get_highest_release():
     versions = sorted([version.parse(x['tag_name']) for x in get_releases()], reverse=True)
     logging.debug(f'Versions: {versions}')
-    return versions[0]
+    highest_version = version.Version('0.0.0')
+    if versions:
+        highest_version = versions[0]
+    return highest_version
 
 
 def increment_major(v):
@@ -126,7 +131,6 @@ def post_release():
             'draft': False,
             'prerelease': False
         }
-        logging.debug(data)
         response = requests.post(url, headers=AUTH_HEADER, data=json.dumps(data))
         logging.debug(response.json())
         response.raise_for_status()

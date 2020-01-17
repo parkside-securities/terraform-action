@@ -1,0 +1,17 @@
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - master
+
+jobs:
+  release:
+    if: github.event.pull_request.merged
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Release
+        uses: parkside-securities/terraform-action@master
+        with:
+          cmd: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
