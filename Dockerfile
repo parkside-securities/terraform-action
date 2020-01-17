@@ -14,6 +14,6 @@ RUN apk --update --no-cache add\
     jq\
     git\
     openssh;\
-    pip3 install envkey awscli
+    pip3 install envkey awscli jinja2 packaging requests
 
 ENTRYPOINT ["entrypoint"]
