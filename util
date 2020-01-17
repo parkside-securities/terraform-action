@@ -194,7 +194,7 @@ run_terratest_test () {
     local project=$(basename $(pwd))
     pushd tests > /dev/null
     go mod init "github.com/parkside-securities/${project}"
-    TF_CLI_ARGS="-no-color" go test 2>&1 | tee test.out
+    TF_CLI_ARGS="-no-color" go test -timeout 120m 2>&1 | tee test.out
     result=${PIPESTATUS[0]}
     if [ ${result} -ne 0 ]; then
         echo "::error:: Test failed: ${project}"
