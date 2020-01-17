@@ -1,15 +1,9 @@
-name: Plan on PR
+name: Parkside GitOps Actions
 author: robert@parkside.app
-description: An action to plan Terraform configs.
+description: A set of Actions for testing, integrating, deploying, and releasing IaC.
 inputs:
-  dirs:
-    description: 'Colon delimited list of directories to process.'
-    required: true
-  base:
-    description: 'Base branch of the PR'
-    required: false
   cmd:
-    description: 'Command to run.  Valid choices are `plan | apply'
+    description: 'Command to run.'
     required: true
 runs:
   using: 'docker'
