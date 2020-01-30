@@ -15,6 +15,7 @@ done
 # GITHUB_TOKEN: API Token for GitHub.  Normally supplied by Actions.
 # GITHUB_EVENT_PATH: Path to JSON file describing the event. Normally supplied by Actions.
 # TERRAFORM_VERSION: Version of terraform to use.
+# GSUITE_PROVIDER_VERSION: Version of Terraform GSuite provider to use.
 # KUBECTL_VERSION: Version of kubectl to use.
 # HELM_VERSION: Version of helm to use.
 # DIRENV_VERSION: Version of direnv to use.

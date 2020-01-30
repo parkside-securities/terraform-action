@@ -23,6 +23,7 @@ Additionally, several environment variables are required:
 | DIRENV_VERSION                | Version of Direnv to use.                                      |
 | ENVKEY_VERSION                | Version of envkey-source to use.                               |
 | AWS_IAM_AUTHENTICATOR_VERSION | Version of aws-iam-authenticator to use.                       |
+| GSUITE_PROVIDER_VERSION       | Version of Terraform GSuite provider to use.                   |
 | ARTIFACTS_DIR                 | Directory to store generated plan files.                       |
 | TERRAFORM_TOKEN               | Terraform Cloud API key (Store in GitHub Secrets).             |
 | SSH_PRIV_KEY                  | SSH private key (for TF modules) (Store in GitHub Secrets).    |

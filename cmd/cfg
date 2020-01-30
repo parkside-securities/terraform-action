@@ -3,6 +3,7 @@ source ${SCRIPT_DIR}/util
 
 mkdir -p ${GITHUB_WORKSPACE}/bin
 get_terraform             ${TERRAFORM_VERSION}             || exit $?
+get_gsuite_provider       ${GSUITE_PROVIDER_VERSION}       || exit $?
 get_kubectl               ${KUBECTL_VERSION}               || exit $?
 get_helm                  ${HELM_VERSION}                  || exit $?
 get_direnv                ${DIRENV_VERSION}                || exit $?
