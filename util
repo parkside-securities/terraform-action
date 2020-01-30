@@ -67,7 +67,6 @@ get_gsuite_provider  () {
     mkdir -p ${HOME}/.terraform.d/plugins
     chmod a+x terraform-provider-gsuite_v${version}
     mv ./terraform-provider-gsuite_v${version} ${HOME}/.terraform.d/plugins/terraform-provider-gsuite_v${version}
-
     popd > /dev/null
     rm -rf $tmp_dir
     echo "::debug:: gsuite_provider=${HOME}/.terraform.d/plugins/terraform-provider-gsuite_v${version}"
