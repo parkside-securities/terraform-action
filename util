@@ -54,6 +54,25 @@ get_terraform () {
     echo "::debug:: terraform=${GITHUB_WORKSPACE}/bin/terraform"
 }
 
+get_gsuite_provider  () {
+    # Download specified version of terraform gsuite provider
+    # Usage: get_gsuite_provider <version>
+    version="${1}"
+    tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
+    pushd $tmp_dir > /dev/null
+    echo "Downloading terraform gsuite provider.."
+    curl -s -LO "https://github.com/DeviaVir/terraform-provider-gsuite/releases/download/v${version}/terraform-provider-gsuite_${version}_linux_amd64.zip" ||\
+        printf "Failed to download terraform gsuite provider. %d\n" $?; return 1; }
+    unzip -q "terraform-provider-gsuite_${version}_linux_amd64.zip"
+    mkdir -p ${HOME}/.terraform.d/plugins
+    chmod a+x terraform-provider-gsuite_v${version}
+    mv ./terraform-provider-gsuite_v${version} ${HOME}/.terraform.d/plugins/terraform-provider-gsuite_v${version}
+
+    popd > /dev/null
+    rm -rf $tmp_dir
+    echo "::debug:: gsuite_provider=${HOME}/.terraform.d/plugins/terraform-provider-gsuite_v${version}"
+}
+
 get_kubectl () {
     # Download specified version of kubectl
     # Usage: get_kubectl <version>
