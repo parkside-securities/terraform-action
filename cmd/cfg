@@ -15,4 +15,3 @@ echo "::debug:: Adding ${GITHUB_WORKSPACE}/bin to PATH"
 
 # This should work, but it doesn't...  Possibly a bug in Actions.
 # echo "::add-path::${GITHUB_WORKSPACE}/bin"
-
