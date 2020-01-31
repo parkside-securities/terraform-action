@@ -54,7 +54,7 @@ get_terraform () {
     echo "::debug:: terraform=${GITHUB_WORKSPACE}/bin/terraform"
 }
 
-get_gsuite_provider  () {
+get_gsuite_provider () {
     # Download specified version of terraform gsuite provider
     # Usage: get_gsuite_provider <version>
     version="${1}"
@@ -62,7 +62,7 @@ get_gsuite_provider  () {
     pushd $tmp_dir > /dev/null
     echo "Downloading terraform gsuite provider.."
     curl -s -LO "https://github.com/DeviaVir/terraform-provider-gsuite/releases/download/v${version}/terraform-provider-gsuite_${version}_linux_amd64.zip" ||\
-        printf "Failed to download terraform gsuite provider. %d\n" $?; return 1; }
+        { printf "Failed to download terraform gsuite provider. %d\n" $?; return 1; }
     unzip -q "terraform-provider-gsuite_${version}_linux_amd64.zip"
     mkdir -p ${HOME}/.terraform.d/plugins
     chmod a+x terraform-provider-gsuite_v${version}
