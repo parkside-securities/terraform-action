@@ -54,7 +54,7 @@ get_terraform () {
     echo "::debug:: terraform=${GITHUB_WORKSPACE}/bin/terraform"
 }
 
-get_gsuite_provider  () {
+get_gsuite_provider () {
     # Download specified version of terraform gsuite provider
     # Usage: get_gsuite_provider <version>
     version="${1}"
@@ -70,6 +70,25 @@ get_gsuite_provider  () {
     popd > /dev/null
     rm -rf $tmp_dir
     echo "::debug:: gsuite_provider=${HOME}/.terraform.d/plugins/terraform-provider-gsuite_v${version}"
+}
+
+get_ccloud_provider () {
+    # Download specified version of terraform confluentcloud provider
+    # Usage: get_ccloud_provider <version>
+    version="${1}"
+    tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
+    pushd $tmp_dir > /dev/null
+    echo "Downloading terraform confluentcloud provider.."
+    
+    curl -s -LO "https://github.com/parkside-securities/terraform-provider-confluentcloud/releases/download/v.${version}/terraform-provider-confluentcloud-v${version}-linux-amd64.tar.gz" ||\
+        printf "Failed to download terraform confluentcloud provider. %d\n" $?; return 1; }
+    tar zxf "terraform-provider-confluentcloud-v${version}-linux-amd64.tar.gz"
+    mkdir -p ${HOME}/.terraform.d/plugins
+    chmod a+x terraform-provider-confluentcloud-v${version}
+    mv ./terraform-provider-confluentcloud-v${version} ${HOME}/.terraform.d/plugins/terraform-provider-confluentcloud-v${version}
+    popd > /dev/null
+    rm -rf $tmp_dir
+    echo "::debug:: confluentcloud_provider=${HOME}/.terraform.d/plugins/terraform-provider-confluentcloud-v${version}"
 }
 
 get_kubectl () {
@@ -334,6 +353,21 @@ comment_on_pr () {
         echo "::debug:: ${curl_out}"
     else
       echo "::debug:: Can't find a GitHub event... Not commenting"
+      return 0
+    fi
+}
+
+create_issue () {
+    if [ -f ${GITHUB_EVENT_PATH} ]; then
+        echo "::debug:: Creating issue..." 
+        body="$(echo "${PASS_MESSAGE:-} ${ERROR_MESSAGE:-} ${DIFF_MESSAGE:-} ${APPLY_MESSAGE:-}" | jq -R --slurp '{body: .}')"
+        echo "${body}" > ${ARTIFACTS_DIR}/report.json
+        issues_url=$(cat ${GITHUB_EVENT_PATH} | jq -r .repository.issues_url)
+        echo "::debug:: issues_url=${comments_url}"
+        curl_out=$(curl -s -S -H "Authorization: token ${GITHUB_TOKEN}" --header "Content-Type: application/json" --data @${ARTIFACTS_DIR}/report.json "${comments_url}")
+        echo "::debug:: ${curl_out}"
+    else
+      echo "::debug:: Can't find a GitHub event... Not creating issue"
       return 0
     fi
 }
