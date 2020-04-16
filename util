@@ -357,21 +357,6 @@ comment_on_pr () {
     fi
 }
 
-create_issue () {
-    if [ -f ${GITHUB_EVENT_PATH} ]; then
-        echo "::debug:: Creating issue..." 
-        body="$(echo "${PASS_MESSAGE:-} ${ERROR_MESSAGE:-} ${DIFF_MESSAGE:-} ${APPLY_MESSAGE:-}" | jq -R --slurp '{body: .}')"
-        echo "${body}" > ${ARTIFACTS_DIR}/report.json
-        issues_url=$(cat ${GITHUB_EVENT_PATH} | jq -r .repository.issues_url)
-        echo "::debug:: issues_url=${comments_url}"
-        curl_out=$(curl -s -S -H "Authorization: token ${GITHUB_TOKEN}" --header "Content-Type: application/json" --data @${ARTIFACTS_DIR}/report.json "${comments_url}")
-        echo "::debug:: ${curl_out}"
-    else
-      echo "::debug:: Can't find a GitHub event... Not creating issue"
-      return 0
-    fi
-}
-
 get_diff_dirs () {
     # Returns a list of directories changed between BASE and HEAD.
     base=${1}
