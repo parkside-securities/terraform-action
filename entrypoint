@@ -1,11 +1,4 @@
 #!/bin/bash -u
-export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-source ${SCRIPT_DIR}/util
-
-# Dump the environment if we're in debug mode.
-for var in $(printenv); do
-    echo "::debug:: ${var}"
-done
 
 # SSH_PRIV_KEY: ssh private key with access to required module repos.
 # SSH_PRIV_KEY_B64: Base64 encoded SSH_PRIV_KEY.  Ignored if SSH_PRIV_KEY is set.
@@ -21,6 +14,24 @@ done
 # HELM_VERSION: Version of helm to use.
 # DIRENV_VERSION: Version of direnv to use.
 # ENVKEY_VERSION: Version of envkey-source to use.
+
+
+export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+export TERRAFORM_VERSION=${TERRAFORM_VERSION:-"0.12.20"}
+export KUBECTL_VERSION=${KUBECTL_VERSION:-"1.17.0"}
+export HELM_VERSION=${HELM_VERSION:-"3.0.2"}
+export DIRENV_VERSION=${DIRENV_VERSION:-"2.20.0"}
+export ENVKEY_VERSION=${ENVKEY_VERSION:-"1.2.9"}
+export AWS_IAM_AUTHENTICATOR_VERSION=${AWS_IAM_AUTHENTICATOR_VERSION:-"1.14.6"}
+export GSUITE_PROVIDER_VERSION=${GSUITE_PROVIDER_VERSION:-"0.1.39"}
+export CONFLUENTCLOUD_PROVIDER_VERSION=${CONFLUENTCLOUD_PROVIDER_VERSION:-"0.0.2"}
+
+source ${SCRIPT_DIR}/util
+
+# Dump the environment if we're in debug mode.
+for var in $(printenv); do
+    echo "::debug:: ${var}"
+done
 
 configure_ssh
 configure_terraform
