@@ -73,22 +73,21 @@ get_gsuite_provider () {
 }
 
 get_ccloud_provider () {
-    # Download specified version of terraform confluentcloud provider
-    # Usage: get_ccloud_provider <version>
+    # Download specified version of terraform gsuite provider
+    # Usage: get_confluentcloud_provider <version>
     version="${1}"
     tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
     pushd $tmp_dir > /dev/null
     echo "Downloading terraform confluentcloud provider.."
-    
     curl -s -LO "https://github.com/parkside-securities/terraform-provider-confluentcloud/releases/download/v.${version}/terraform-provider-confluentcloud-v${version}-linux-amd64.tar.gz" ||\
-        printf "Failed to download terraform confluentcloud provider. %d\n" $?; return 1; }
+        { printf "Failed to download terraform gsuite provider. %d\n" $?; return 1; }
     tar zxf "terraform-provider-confluentcloud-v${version}-linux-amd64.tar.gz"
     mkdir -p ${HOME}/.terraform.d/plugins
-    chmod a+x terraform-provider-confluentcloud-v${version}
-    mv ./terraform-provider-confluentcloud-v${version} ${HOME}/.terraform.d/plugins/terraform-provider-confluentcloud-v${version}
+    chmod a+x terraform-provider-*
+    mv ./terraform-provider-* ${HOME}/.terraform.d/plugins
     popd > /dev/null
     rm -rf $tmp_dir
-    echo "::debug:: confluentcloud_provider=${HOME}/.terraform.d/plugins/terraform-provider-confluentcloud-v${version}"
+    echo "::debug:: ccloud_provider=${HOME}/.terraform.d/plugins/terraform-provider-confluentcloud_v${version}"
 }
 
 get_kubectl () {
