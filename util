@@ -73,8 +73,8 @@ get_gsuite_provider () {
 }
 
 get_ccloud_provider () {
-    # Download specified version of terraform gsuite provider
-    # Usage: get_confluentcloud_provider <version>
+    # Download specified version of terraform confluentcloud provider
+    # Usage: get_ccloud_provider <version>
     version="${1}"
     tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
     pushd $tmp_dir > /dev/null
@@ -88,6 +88,24 @@ get_ccloud_provider () {
     popd > /dev/null
     rm -rf $tmp_dir
     echo "::debug:: ccloud_provider=${HOME}/.terraform.d/plugins/terraform-provider-confluentcloud_v${version}"
+}
+
+get_kafka_provider () {
+    # Download specified version of terraform kafka provider
+    # Usage: get_kafka_provider <version>
+    version="${1}"
+    tmp_dir=$(mktemp -d -t cd-XXXXXXXXXX)
+    pushd $tmp_dir > /dev/null
+    echo "Downloading terraform kafka provider.."
+    curl -s -LO "https://github.com/mongey/terraform-provider-kafka/releases/download/v${version}/terraform-provider-kafka_${version}_linux_amd64.tar.gz" ||\
+        { printf "Failed to download terraform kafka provider. %d\n" $?; return 1; }
+    tar zxf "terraform-provider-kafka-${version}-linux-amd64.tar.gz"
+    mkdir -p ${HOME}/.terraform.d/plugins
+    chmod a+x terraform-provider-*
+    mv ./terraform-provider-* ${HOME}/.terraform.d/plugins
+    popd > /dev/null
+    rm -rf $tmp_dir
+    echo "::debug:: kafka_provider=${HOME}/.terraform.d/plugins/terraform-provider-kafka_${version}"
 }
 
 get_kubectl () {
