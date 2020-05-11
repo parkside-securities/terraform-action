@@ -99,7 +99,7 @@ get_kafka_provider () {
     echo "Downloading terraform kafka provider.."
     curl -s -LO "https://github.com/mongey/terraform-provider-kafka/releases/download/v${version}/terraform-provider-kafka_${version}_linux_amd64.tar.gz" ||\
         { printf "Failed to download terraform kafka provider. %d\n" $?; return 1; }
-    tar zxf "terraform-provider-kafka-${version}-linux-amd64.tar.gz"
+    tar zxf "terraform-provider-kafka_${version}_linux_amd64.tar.gz"
     mkdir -p ${HOME}/.terraform.d/plugins
     chmod a+x terraform-provider-*
     mv ./terraform-provider-* ${HOME}/.terraform.d/plugins
