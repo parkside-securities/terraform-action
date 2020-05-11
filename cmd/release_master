@@ -64,12 +64,7 @@ def increment_micro(v):
 
 
 def get_commits():
-    response = requests.get(
-        EVENT['repository']['commits_url'],
-        headers=AUTH_HEADER,
-    )
-    logging.debug(response.json())
-    return response.json()
+    return EVENT['commits']
 
 
 def parse_commits():
