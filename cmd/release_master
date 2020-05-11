@@ -76,9 +76,9 @@ def parse_commits():
     }
     pattern = re.compile(r'^(?P<type>[\w]+)\((?P<component>[\w]+)\)?: (?P<title>[\w ]*).*')
     for commit in get_commits():
-        if 'BREAK' in commit['commit']['message']:
+        if 'BREAK' in commit['message']:
             commits['changes'].append(commit)
-        m = pattern.match(commit['commit']['message'])
+        m = pattern.match(commit['message'])
         if m:
             if 'fix' in m.groupdict()['type']:
                 commits['fixes'].append(commit)
