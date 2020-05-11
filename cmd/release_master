@@ -25,7 +25,7 @@ RELEASE_TEMPLATE = '''
 |Message|Author|Commit|
 |-------|------|------|
 {% for item in v -%}
-|{{ item['commit']['message'].split('\n')[0] }}|![{{item['author']['login']}}]({{item['author']['avatar_url']}}&s=32 "{{item['author']['login']}}")|[{{ item['sha'][:7] }}]({{ item['commit']['url'] }})|
+|{{ item['message'].split('\n')[0] }}|![{{item['author']['username']}}]|[{{ item['id'] }}]|
 {% endfor %}
 {% endif %}
 {% endfor %}
