@@ -86,10 +86,10 @@ def parse_commits():
                 commits['features'].append(commit)
             else:
                 commits['other'].append(commit)
-                logging.debug(f'Commit parsed, but type unknown: {commit["commit"]["message"]}')
+                logging.debug(f'Commit parsed, but type unknown: {commit["message"]}')
         else:
                 commits['other'].append(commit)
-                logging.debug(f'Unable to parse commit message: {commit["commit"]["message"]}' )
+                logging.debug(f'Unable to parse commit message: {commit["message"]}' )
     return commits
 
 
