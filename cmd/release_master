@@ -1,0 +1,139 @@
+#!/usr/bin/env python3
+import jinja2
+import json
+import logging
+import os
+import re
+import requests
+
+from packaging import version
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='::%(levelname)s file=%(filename)s,line=%(lineno)d::%(message)s'
+)
+
+AUTH_HEADER={'Authorization':"token " + os.environ.get('GITHUB_TOKEN')}
+with open(os.environ.get('GITHUB_EVENT_PATH'), 'r') as f:
+    EVENT = json.loads(f.read())
+logging.debug(EVENT)
+
+RELEASE_TEMPLATE = '''
+{% for k,v in commits.items() %}
+{% if v %}
+## {{k.title()}}:
+|Message|Author|Commit|
+|-------|------|------|
+{% for item in v -%}
+|{{ item['commit']['message'].split('\n')[0] }}|![{{item['author']['login']}}]({{item['author']['avatar_url']}}&s=32 "{{item['author']['login']}}")|[{{ item['sha'][:7] }}]({{ item['commit']['url'] }})|
+{% endfor %}
+{% endif %}
+{% endfor %}
+'''
+
+
+def get_releases():
+    url = EVENT['repository']['releases_url'].split('{')[0]
+    response = requests.get(
+        url,
+        headers=AUTH_HEADER,
+    )
+    logging.debug(response.json())
+    return response.json()
+
+
+def get_highest_release():
+    versions = sorted([version.parse(x['tag_name']) for x in get_releases()], reverse=True)
+    logging.debug(f'Versions: {versions}')
+    highest_version = version.Version('0.0.0')
+    if versions:
+        highest_version = versions[0]
+    return highest_version
+
+
+def increment_major(v):
+    return version.Version(f'{v.major + 1}.0.0')
+
+
+def increment_minor(v):
+    return version.Version(f'{v.major}.{v.minor + 1}.0')
+
+
+def increment_micro(v):
+    return version.Version(f'{v.major}.{v.minor}.{v.micro + 1}')
+
+
+def get_commits():
+    response = requests.get(
+        EVENT['repository']['commits_url'],
+        headers=AUTH_HEADER,
+    )
+    logging.debug(response.json())
+    return response.json()
+
+
+def parse_commits():
+    commits = {
+        'fixes': [],
+        'features': [],
+        'changes': [],
+        'other': []
+    }
+    pattern = re.compile(r'^(?P<type>[\w]+)\((?P<component>[\w]+)\)?: (?P<title>[\w ]*).*')
+    for commit in get_commits():
+        if 'BREAK' in commit['commit']['message']:
+            commits['changes'].append(commit)
+        m = pattern.match(commit['commit']['message'])
+        if m:
+            if 'fix' in m.groupdict()['type']:
+                commits['fixes'].append(commit)
+            elif 'feat' in m.groupdict()['type']:
+                commits['features'].append(commit)
+            else:
+                commits['other'].append(commit)
+                logging.debug(f'Commit parsed, but type unknown: {commit["commit"]["message"]}')
+        else:
+                commits['other'].append(commit)
+                logging.debug(f'Unable to parse commit message: {commit["commit"]["message"]}' )
+    return commits
+
+
+def render_template(commits):
+    env = jinja2.Environment()
+    template = env.from_string(RELEASE_TEMPLATE)
+    return template.render(commits=commits)
+
+
+def get_release_version(commits):
+    release_version = None
+    if commits['changes']:
+        release_version = increment_major(get_highest_release())
+    elif commits['features']:
+        release_version = increment_minor(get_highest_release())
+    elif commits['fixes']:
+        release_version = increment_micro(get_highest_release())
+    else:
+        logging.warning('No Changes, no Features, no Fixes... Increment patch version.')
+        release_version = increment_micro(get_highest_release())
+    return release_version
+
+
+def post_release():
+    commits = parse_commits()
+    release_version = get_release_version(commits)
+    if release_version:
+        url = EVENT['repository']['releases_url'].split('{')[0]
+        data = {
+            'tag_name': str(release_version),
+            'target_commitish': EVENT['ref'],
+            'name': str(release_version),
+            'body': render_template(commits),
+            'draft': False,
+            'prerelease': False
+        }
+        response = requests.post(url, headers=AUTH_HEADER, data=json.dumps(data))
+        logging.debug(response.json())
+        response.raise_for_status()
+
+if __name__ == "__main__":
+    post_release()
