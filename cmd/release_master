@@ -22,10 +22,13 @@ RELEASE_TEMPLATE = '''
 {% for k,v in commits.items() %}
 {% if v %}
 ## {{k.title()}}:
-|Message|Author|Commit|
-|-------|------|------|
+
 {% for item in v -%}
-|{{ item['message'] }}|{{item['author']['username']}}|{{ item['id'] }}|
+
+{{ item['message'] }}
+
+{{item['author']['username']}} {{ item['id'] }}|
+
 {% endfor %}
 {% endif %}
 {% endfor %}
