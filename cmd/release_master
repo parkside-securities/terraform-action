@@ -27,7 +27,7 @@ RELEASE_TEMPLATE = '''
 
 ### {{ item['title'] }}
 
-item['message']
+{{ item['message'] }}
 
 - Author: {{item['author']['username']}}
 - Commit: {{ item['id'] }}
