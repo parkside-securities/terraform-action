@@ -84,8 +84,9 @@ def parse_commits():
         if 'BREAK' in commit['message']:
             commits['changes'].append(commit)
         m = pattern.match(commit['message'])
-        commit['component'] = m.groupdict()['component']
+
         if m:
+            if m commit['component'] = m.groupdict()['component']
             if 'fix' in m.groupdict()['type']:
                 commits['fixes'].append(commit)
             elif 'feat' in m.groupdict()['type']:
