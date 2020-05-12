@@ -25,9 +25,11 @@ RELEASE_TEMPLATE = '''
 
 {% for item in v -%}
 
-{{ item['message'] }}
+### {{ item['message'] }}
 
-{{item['author']['username']}} {{ item['id'] }}|
+- Author: {{item['author']['username']}}
+- Commit: {{ item['id'] }}
+- Component: {{ item['component'] }}
 
 {% endfor %}
 {% endif %}
@@ -82,6 +84,7 @@ def parse_commits():
         if 'BREAK' in commit['message']:
             commits['changes'].append(commit)
         m = pattern.match(commit['message'])
+        commit['component'] = m.groupdict()['component']
         if m:
             if 'fix' in m.groupdict()['type']:
                 commits['fixes'].append(commit)
