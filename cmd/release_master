@@ -81,7 +81,7 @@ def parse_commits():
         'changes': [],
         'other': []
     }
-    pattern = re.compile(r'^(?P<type>[\w]+)\((?P<component>[\w]+)\)?: (?P<title>[\w ]*).*')
+    pattern = re.compile(r'^(?P<type>[^\(\)]+)\((?P<component>[^\(\)]+)\)?: (?P<title>[^\r\n]*).*')
     for commit in get_commits():
         if 'BREAK' in commit['message']:
             commits['changes'].append(commit)
