@@ -1,4 +1,4 @@
-FROM golang:alpine
+FROM golang:1.14.3-alpine
 
 COPY cmd /usr/local/bin
 COPY entrypoint /usr/local/bin
