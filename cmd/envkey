@@ -9,7 +9,7 @@ def export_env():
     print(f'::add-mask::{os.environ["ENVKEY"]}') 
     with open(env_file, 'a') as f:
         for k,v in env.items(): 
-            f.writeline(f'{k}={v}') 
+            f.write(f'{k}={v}\n') 
 
 if __name__ == '__main__':
     export_env()
