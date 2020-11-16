@@ -1,1 +1,1 @@
-resource "null_resource" "test_fixture"{}
+resource "null_resource" "test_fixture" {}
