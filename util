@@ -38,6 +38,17 @@ mk_artifacts_dir () {
     mkdir -p ${ARTIFACTS_DIR}
 }
 
+get_tfenv () {
+    version="${1}"
+    echo "Cloning tfenv..."
+    git clone https://github.com/tfutils/tfenv.git ~/.tfenv ||\
+        { printf "Failed to clone tfenv. %d\n" $?; return 1; }
+    ln -s ~/.tfenv/bin/* ${SCRIPT_DIR}
+    ln -s ~/.tfenv/bin/* ${GITHUB_WORKSPACE}/bin
+    tfenv install ${version}
+    tfenv use ${version}
+}
+
 get_terraform () {
     # Download specified version of terraform
     # Usage: get_terraform <version>
