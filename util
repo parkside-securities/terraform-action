@@ -43,7 +43,7 @@ get_tfenv () {
     echo "Cloning tfenv..."
     git clone https://github.com/tfutils/tfenv.git ~/.tfenv ||\
         { printf "Failed to clone tfenv. %d\n" $?; return 1; }
-    ln -s ~/.tfenv/bin/* ${GITHUB_WORKSPACE}/bin
+    ln -s ~/.tfenv/bin/* ${SCRIPT_DIR}
     tfenv install ${version}
     tfenv use ${version}
 }
