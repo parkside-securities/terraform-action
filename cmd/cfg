@@ -3,9 +3,6 @@ source ${SCRIPT_DIR}/util
 
 mkdir -p ${GITHUB_WORKSPACE}/bin               
 get_tfenv                 ${TERRAFORM_VERSION}               || exit $?
-get_gsuite_provider       ${GSUITE_PROVIDER_VERSION}         || exit $?
-get_ccloud_provider       ${CONFLUENTCLOUD_PROVIDER_VERSION} || exit $?
-get_kafka_provider        ${KAFKA_PROVIDER_VERSION}          || exit $?
 get_kubectl               ${KUBECTL_VERSION}                 || exit $?
 get_helm                  ${HELM_VERSION}                    || exit $?
 get_direnv                ${DIRENV_VERSION}                  || exit $?
@@ -14,6 +11,3 @@ get_aws_iam_authenticator ${AWS_IAM_AUTHENTICATOR_VERSION}   || exit $?
 
 echo "PATH=${GITHUB_WORKSPACE}/bin:${PATH}" >> $GITHUB_ENV
 echo "::debug:: Adding ${GITHUB_WORKSPACE}/bin to PATH"
-
-# This should work, but it doesn't...  Possibly a bug in Actions.
-# echo "::add-path::${GITHUB_WORKSPACE}/bin"
