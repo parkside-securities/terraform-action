@@ -71,7 +71,10 @@ def increment_micro(v):
 
 
 def get_commits():
-    return EVENT['commits']
+    try:
+        return EVENT['commits']
+    except KeyError:
+        return []
 
 
 def parse_commits():
